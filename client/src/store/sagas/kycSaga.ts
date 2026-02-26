@@ -1,14 +1,13 @@
-import { takeLatest, call, put } from "redux-saga/effects";
+import { takeLatest, call, put, select } from "redux-saga/effects";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { KycStatus } from "../slices/kycSlice";
+
 import { kycActions } from "../slices/kycSlice";
+import { authActions } from "../slices/authSlice";
+
 import {
   submitKyc as submitKycApi,
   getKycStatus as getKycStatusApi,
 } from "@/services/kyc.service";
-import { select } from "redux-saga/effects";
-
-const selectPersonalDetails = (state: any) => state.kyc.personalDetails;
 
 /* =========================
    TYPES
@@ -20,20 +19,33 @@ interface SubmitKycPayload {
   selfieFile?: File | null;
   aadhaarNumber: string;
   panNumber: string;
+  navigate: (path: string) => void;
 }
+
+/* =========================
+   SELECTORS
+========================= */
+
+const selectPersonalDetails = (state: any) =>
+  state.kyc.personalDetails;
 
 /* =========================
    SUBMIT KYC WORKER
 ========================= */
 
 function* submitKycWorker(
-  action: PayloadAction<SubmitKycPayload>,
+  action: PayloadAction<SubmitKycPayload>
 ): Generator<any, any, any> {
   try {
-    const { aadhaarFile, panFile, selfieFile, aadhaarNumber, panNumber } =
-      action.payload;
+    const {
+      aadhaarFile,
+      panFile,
+      selfieFile,
+      aadhaarNumber,
+      panNumber,
+      
+    } = action.payload;
 
-    // 👇 get personal details from redux
     const personalDetails = yield select(selectPersonalDetails);
 
     const formData = new FormData();
@@ -46,11 +58,11 @@ function* submitKycWorker(
       formData.append("selfie", selfieFile);
     }
 
-    // 👇 Match backend field names EXACTLY
+    // Document numbers
     formData.append("aadhaarNo", aadhaarNumber);
     formData.append("panNo", panNumber);
 
-    // 👇 Append personal details
+    // Personal details
     formData.append("firstName", personalDetails.firstName);
     formData.append("middleName", personalDetails.middleName || "");
     formData.append("lastName", personalDetails.lastName);
@@ -65,43 +77,70 @@ function* submitKycWorker(
 
     const response = yield call(submitKycApi, formData);
 
-    const status: KycStatus =
-      (response?.data?.data?.status?.toUpperCase() as KycStatus) || "PENDING";
+    const status =
+      response?.data?.data?.status?.toUpperCase() || "PENDING";
 
-    yield put(kycActions.submitKycSuccess({ status }));
-  } catch (e: any) {
+    // 🔥 Update compliance inside auth slice
+yield put(
+  authActions.setCompliance({
+    kycStatus: status,
+  })
+);
+
+// 🔥 tell UI submission finished
+yield put(
+  kycActions.submitKycSuccess({
+    status,
+  })
+);
+
+// 🔥 redirect user
+yield call(action.payload.navigate, "/user");
+
+  } catch (error: any) {
     yield put(
       kycActions.submitKycFailure(
-        e?.response?.data?.message || "KYC submission failed",
-      ),
+        error?.response?.data?.message ||
+          "KYC submission failed"
+      )
     );
   }
 }
+
 /* =========================
    FETCH STATUS WORKER
 ========================= */
 
-function* fetchKycStatusWorker(): Generator<any, any, any> {
-  try {
-    const response = yield call(getKycStatusApi);
+// function* fetchKycStatusWorker(): Generator<any, any, any> {
+//   try {
+//     const response = yield call(getKycStatusApi);
 
-    yield put(
-      kycActions.setKycStatus({
-        status: response?.data?.status,
-        rejectionReason: response?.data?.rejectionReason,
-      }),
-    );
-  } catch (e) {
-    yield put(kycActions.fetchKycStatusFailure());
-  }
-}
+//     const status =
+//       response?.data?.data?.status?.toUpperCase() || "NOT_STARTED";
+
+//     // 🔥 Compliance goes to auth slice
+//     yield put(
+//       authActions.setCompliance({
+//         kycStatus: status,
+//       })
+//     );
+//   } catch (error) {
+//     // If API fails, treat as NOT_STARTED
+//     yield put(
+//       authActions.setCompliance({
+//         kycStatus: "NOT_STARTED",
+//       })
+//     );
+//   }
+// }
 
 /* =========================
    ROOT SAGA
 ========================= */
 
 export default function* kycSaga() {
-  yield takeLatest(kycActions.submitKycRequest.type, submitKycWorker);
-
-  yield takeLatest(kycActions.fetchKycStatusRequest.type, fetchKycStatusWorker);
+  yield takeLatest(
+    kycActions.submitKycRequest.type,
+    submitKycWorker
+  );
 }

@@ -39,9 +39,7 @@ function* signupWorker(
     );
   } catch (err: any) {
     yield put(
-      authActions.flowFailure(
-        err.response?.data?.message || "Signup failed",
-      ),
+      authActions.flowFailure(err.response?.data?.message || "Signup failed"),
     );
   }
 }
@@ -63,19 +61,19 @@ function* loginWorker(
 
     const { token, user: serverUser } = res.data.data;
 
-    const user = {
-      id: serverUser._id,
-      name: serverUser.name,
-      email: serverUser.email,
-      role: serverUser.role,
-    };
-
     setAuthToken(token, action.payload.rememberMe);
 
     yield put(
       authActions.loginSuccess({
-        user,
+        user: {
+          id: serverUser.id, // ✅ FIXED
+          name: serverUser.name,
+          email: serverUser.email,
+          role: serverUser.role,
+        },
         token,
+        accountStatus: serverUser.accountStatus,
+        kycStatus: serverUser.kycStatus, // ✅ USE BACKEND VALUE
       })
     );
   } catch (err: any) {
@@ -95,14 +93,9 @@ function* loginWorker(
       return;
     }
 
-    yield put(
-      authActions.loginFailure(
-        response?.message || "Login failed"
-      )
-    );
+    yield put(authActions.loginFailure(response?.message || "Login failed"));
   }
 }
-
 
 /* ================= VERIFY OTP ================= */
 
@@ -144,8 +137,9 @@ function* verifyOtpWorker(
 
 /* ================= FORGOT PASSWORD ================= */
 
-
-function* forgotPasswordWorker(action: ReturnType<typeof authActions.forgotPasswordRequest>) {
+function* forgotPasswordWorker(
+  action: ReturnType<typeof authActions.forgotPasswordRequest>,
+) {
   try {
     // 1️⃣ Start flow
     yield put(authActions.startFlow("FORGOT_PASSWORD"));
@@ -159,18 +153,16 @@ function* forgotPasswordWorker(action: ReturnType<typeof authActions.forgotPassw
     yield put(
       authActions.flowSuccess({
         email: action.payload.email,
-      })
+      }),
     );
-
   } catch (error: any) {
     yield put(
       authActions.flowFailure(
-        error.response?.data?.message || "Failed to send OTP"
-      )
+        error.response?.data?.message || "Failed to send OTP",
+      ),
     );
   }
 }
-
 
 /* ================= RESET PASSWORD ================= */
 
@@ -179,7 +171,7 @@ function* resetPasswordWorker(
     email: string;
     otp: string;
     newPassword: string;
-  }>
+  }>,
 ): Generator {
   try {
     yield put(authActions.startFlow("RESET_PASSWORD"));
@@ -191,22 +183,18 @@ function* resetPasswordWorker(
     });
 
     yield put(authActions.flowSuccess({}));
-
   } catch (err: any) {
     yield put(
       authActions.flowFailure(
-        err.response?.data?.message || "Password reset failed"
-      )
+        err.response?.data?.message || "Password reset failed",
+      ),
     );
   }
 }
 
-
 /* ================= RESEND OTP ================= */
 
-function* resendOtpWorker(
-  action: PayloadAction<{ email: string }>,
-): Generator {
+function* resendOtpWorker(action: PayloadAction<{ email: string }>): Generator {
   try {
     yield call(api.post, ENDPOINTS.AUTH.RESEND_OTP, action.payload);
   } catch (err: any) {
@@ -218,6 +206,41 @@ function* resendOtpWorker(
   }
 }
 
+function* hydrateSessionWorker(): Generator<any, any, any> {
+  try {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    if (!token) {
+      yield put(authActions.hydrateSessionFailure());
+      return;
+    }
+
+    // Set token to axios header
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+    // Fetch user profile
+    const profileRes = yield call(api.get, "/user/profile");
+
+    // Fetch KYC status
+    const kycRes = yield call(api.get, "/kyc/me");
+
+    const user = profileRes.data.data;
+    const kycStatus =
+      kycRes?.data?.data?.status?.toUpperCase() || "NOT_STARTED";
+
+    yield put(
+      authActions.hydrateSessionSuccess({
+        user,
+        accountStatus: user.accountStatus,
+        kycStatus,
+      }),
+    );
+  } catch (err) {
+    yield put(authActions.hydrateSessionFailure());
+  }
+}
+
 /* ================= WATCHERS ================= */
 
 export default function* authSaga(): Generator {
@@ -225,6 +248,13 @@ export default function* authSaga(): Generator {
   yield takeLatest(authActions.loginRequest.type, loginWorker);
   yield takeLatest(authActions.verifyOtpRequest.type, verifyOtpWorker);
   yield takeLatest(authActions.resendOtpRequest.type, resendOtpWorker);
-  yield takeLatest(authActions.forgotPasswordRequest.type, forgotPasswordWorker);
+  yield takeLatest(
+    authActions.forgotPasswordRequest.type,
+    forgotPasswordWorker,
+  );
   yield takeLatest(authActions.resetPasswordRequest.type, resetPasswordWorker);
+  yield takeLatest(
+    authActions.hydrateSessionRequest.type,
+    hydrateSessionWorker,
+  );
 }

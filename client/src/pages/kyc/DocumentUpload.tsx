@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   UploadCloud,
@@ -21,9 +21,7 @@ import { kycActions } from "@/store/slices/kycSlice";
 const DocumentUpload = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { status, loading } = useAppSelector(
-    (state) => state.kyc,
-  );
+  const { loading } = useAppSelector((state) => state.kyc);
 
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -107,33 +105,29 @@ const DocumentUpload = () => {
   //   );
   // };
 
-  
+  const handleSubmit = () => {
+    if (!canContinue) return;
 
-const handleSubmit = () => {
-  if (!canContinue) return;
+    dispatch(
+      kycActions.setDocuments({
+        aadhaarFile: files.aadhaar!,
+        panFile: files.pan!,
+        selfieFile: files.selfie,
+        aadhaarNumber: docNumbers.aadhaar,
+        panNumber: docNumbers.pan,
+      }),
+    );
 
-  dispatch(
-    kycActions.setDocuments({
-      aadhaarFile: files.aadhaar!,
-      panFile: files.pan!,
-      selfieFile: files.selfie,
-      aadhaarNumber: docNumbers.aadhaar,
-      panNumber: docNumbers.pan,
-    })
-  );
-
-  navigate("/kyc/review-submit");
-};
-
-
+    navigate("/kyc/review-submit");
+  };
 
   /* Redirect After Success */
 
-
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-6
-    bg-[radial-gradient(ellipse_at_top,_hsl(var(--accent)/0.38),_transparent_65%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--background)))]">
+    <div
+      className="min-h-screen flex items-center justify-center p-6
+    bg-[radial-gradient(ellipse_at_top,_hsl(var(--accent)/0.38),_transparent_65%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--background)))]"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

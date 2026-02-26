@@ -21,7 +21,6 @@ interface KycDocuments {
 
 
 interface KycState {
-  status: KycStatus;
   skipped: boolean;
   currentStep: KycStep;
   loading: boolean;
@@ -34,7 +33,6 @@ interface KycState {
 /* ================= INITIAL STATE ================= */
 
 const initialState: KycState = {
-  status: "NOT_STARTED",
   skipped: false,
   currentStep: "START",
   loading: false,
@@ -69,7 +67,7 @@ const kycSlice = createSlice({
 
     submitKycSuccess(state, action: PayloadAction<{ status: KycStatus }>) {
       state.loading = false;
-      state.status = action.payload.status;
+      // state.status = action.payload.status;
       state.currentStep = "STATUS";
       state.skipped = false;
     },
@@ -80,26 +78,26 @@ const kycSlice = createSlice({
     },
 
     /* ---------- FETCH STATUS ---------- */
-    fetchKycStatusRequest(state) {
-      state.loading = true;
-    },
+    // fetchKycStatusRequest(state) {
+    //   state.loading = true;
+    // },
 
-    setKycStatus(
-      state,
-      action: PayloadAction<{
-        status: KycStatus;
-        rejectionReason?: string | null;
-      }>,
-    ) {
-      state.loading = false;
-      state.status = action.payload.status;
-      state.rejectionReason = action.payload.rejectionReason ?? null;
-      state.currentStep = "STATUS";
-    },
+    // setKycStatus(
+    //   state,
+    //   action: PayloadAction<{
+    //     status: KycStatus;
+    //     rejectionReason?: string | null;
+    //   }>,
+    // ) {
+    //   state.loading = false;
+    //   state.status = action.payload.status;
+    //   state.rejectionReason = action.payload.rejectionReason ?? null;
+    //   state.currentStep = "STATUS";
+    // },
 
-    fetchKycStatusFailure(state) {
-      state.loading = false;
-    },
+    // fetchKycStatusFailure(state) {
+    //   state.loading = false;
+    // },
 
     /* ---------- PERSONAL DETAILS ---------- */
     setPersonalDetails(state, action: PayloadAction<Record<string, any>>) {

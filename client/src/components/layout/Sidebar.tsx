@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Diamond,
@@ -37,6 +37,7 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const dispatch = useDispatch();
 
   const user = useSelector((state: any) => state.auth.user);
+  const kycStatus = useSelector((state: any) => state.auth.kycStatus);
 
   const handleLogout = () => {
     if (onClose) onClose();
@@ -46,7 +47,6 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
     delete api.defaults.headers.common.Authorization;
 
     dispatch(authActions.logout());
-    dispatch(kycActions.resetKycSession());
 
     navigate("/login", { replace: true });
   };
@@ -55,8 +55,7 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const bottomNavItems = role === "admin" ? adminBottomNav : userBottomNav;
 
   const isActive = (href: string) =>
-    location.pathname === href ||
-    location.pathname.startsWith(href + "/");
+    location.pathname === href || location.pathname.startsWith(href + "/");
 
   const handleNavClick = () => {
     if (onClose) onClose();
@@ -81,19 +80,22 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.href}>
-              <Link
+              <NavLink
                 to={item.href}
+                end
                 onClick={handleNavClick}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                  isActive(item.href)
-                    ? "bg-primary text-primary-foreground shadow-soft"
-                    : "text-muted-foreground hover:text-primary hover:bg-muted"
-                )}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-soft"
+                      : "text-muted-foreground hover:text-primary hover:bg-muted",
+                  )
+                }
               >
                 <item.icon className="h-5 w-5" />
                 <span className="font-medium">{item.label}</span>
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -104,19 +106,22 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
         <ul className="space-y-1 mb-4">
           {bottomNavItems.map((item) => (
             <li key={item.href}>
-              <Link
+              <NavLink
                 to={item.href}
+                end
                 onClick={handleNavClick}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                  isActive(item.href)
-                    ? "bg-primary text-primary-foreground shadow-soft"
-                    : "text-muted-foreground hover:text-primary hover:bg-muted"
-                )}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-soft"
+                      : "text-muted-foreground hover:text-primary hover:bg-muted",
+                  )
+                }
               >
                 <item.icon className="h-5 w-5" />
                 <span className="font-medium">{item.label}</span>
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -137,11 +142,14 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                   <div className="font-medium text-primary text-sm">
                     {user?.name || "User"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  {/* <div className="text-xs text-muted-foreground">
                     {role === "admin"
                       ? "Administrator"
-                      : "Verified Trader"}
-                  </div>
+                      : kycStatus === "APPROVED"
+                        ? "Verified Trader"
+                        : "Trader"}
+                  </div> */}
+
                   <div className="mt-1">
                     <KycStatusBadge />
                   </div>
@@ -191,9 +199,13 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
             <div className="font-medium text-primary text-sm">
               {user?.name || "User"}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {role === "admin" ? "Administrator" : "Verified Trader"}
-            </div>
+            {/* <div className="text-xs text-muted-foreground">
+              {role === "admin"
+                ? "Administrator"
+                : kycStatus === "APPROVED"
+                  ? "Verified Trader"
+                  : "Trader"}
+            </div> */}
           </div>
         </div>
       </div>

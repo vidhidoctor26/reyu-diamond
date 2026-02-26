@@ -5,42 +5,16 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { kycActions } from "@/store/slices/kycSlice";
-import { useEffect } from "react";
+import { authActions } from "@/store/slices/authSlice";
+
+
 
 const KycStart = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { status, loading } = useAppSelector((state) => state.kyc);
-
-  /* ===============================
-     FETCH STATUS ON PAGE LOAD
-  =============================== */
-  useEffect(() => {
-    dispatch(kycActions.fetchKycStatusRequest());
-  }, [dispatch]);
-
-  useEffect(() => {
-  console.log("KYC STATE:", { status, loading });
-}, [status, loading]);
-
-
-  /* ===============================
-     REDIRECT BASED ON STATUS
-  =============================== */
-  useEffect(() => {
-    if (loading) return;
-
-    if (status === "APPROVED") {
-      navigate("/user", { replace: true });
-      return;
-    }
-
-    if (status === "PENDING" || status === "REJECTED") {
-      navigate("/kyc/status", { replace: true });
-      return;
-    }
-  }, [status, loading, navigate]);
+  const { kycStatus } = useAppSelector((state) => state.auth);
+  const { loading } = useAppSelector((state) => state.kyc);
 
   /* ===============================
      START KYC
@@ -53,10 +27,18 @@ const KycStart = () => {
   /* ===============================
      SKIP KYC
   =============================== */
-  const handleSkipKyc = () => {
-    dispatch(kycActions.skipKyc());
-    navigate("/user", { replace: true });
-  };
+ const handleSkipKyc = () => {
+  dispatch(kycActions.skipKyc());
+
+  // 🔥 IMPORTANT: update auth slice
+  dispatch(
+    authActions.setCompliance({
+      kycStatus: "PENDING",
+    })
+  );
+
+  navigate("/user", { replace: true });
+};
 
   /* ===============================
      UI
@@ -90,7 +72,8 @@ const KycStart = () => {
 
           <p className="text-muted-foreground text-center max-w-md mx-auto mb-10">
             To ensure secure diamond trading and enable escrow-backed payments,
-            identity verification is required before accessing platform features.
+            identity verification is required before accessing platform
+            features.
           </p>
 
           {/* Benefits */}
@@ -134,6 +117,7 @@ const KycStart = () => {
 
           {/* Skip */}
           <div className="flex justify-end mt-4">
+            
             <Button
               variant="ghost"
               size="sm"

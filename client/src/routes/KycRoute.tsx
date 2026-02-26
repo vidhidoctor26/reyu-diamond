@@ -7,14 +7,22 @@ interface KycRouteProps {
 }
 
 const KycRoute = ({ children }: KycRouteProps) => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const { status } = useAppSelector((state) => state.kyc);
+  const { isAuthenticated, kycStatus } = useAppSelector(
+    (state) => state.auth
+  );
 
+  // 🔒 Not logged in
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (status === "APPROVED") {
+  // ⏳ Still loading compliance
+  if (!kycStatus) {
+    return null;
+  }
+
+  // ✅ If already approved, block KYC pages
+  if (kycStatus === "APPROVED") {
     return <Navigate to="/user" replace />;
   }
 

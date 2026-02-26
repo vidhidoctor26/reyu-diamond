@@ -20,6 +20,8 @@ router.post(
 );
 
 router.get("/",  permit("admin"), validate(getKycsSchema) ,KycController.getKycs);
+router.get("/me", KycController.getMyKycStatus);
+
 
 router.put(
   "/:id/verify-kyc",

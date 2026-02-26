@@ -10,7 +10,8 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   if (isAuthenticated) {
-    return <Navigate to="/kyc/start" replace />;
+    // 🔥 Do NOT decide destination here
+    return <Navigate to="/app" replace />;
   }
 
   return <>{children}</>;

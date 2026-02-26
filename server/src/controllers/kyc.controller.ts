@@ -4,7 +4,6 @@ import multer from "multer";
 import { sendResponse } from "../utils/api.response";
 
 export const submitKyc = async (req: any, res: any, next: any) => {
-
   try {
     const files = req.files;
 
@@ -118,6 +117,16 @@ export const getKycs = async (req: any, res: any, next: any) => {
     );
 
     return sendResponse(res, 200, true, "KYC list retrieved", result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyKycStatus = async (req: any, res: any, next: any) => {
+  try {
+    const kyc = await KycService.getMyKycStatus(req.user._id);
+
+    return sendResponse(res, 200, true, "KYC status fetched", kyc);
   } catch (err) {
     next(err);
   }

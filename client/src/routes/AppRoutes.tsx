@@ -1,4 +1,5 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Outlet, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 /* Public */
 import Index from "@/pages/LandingPage";
@@ -8,6 +9,7 @@ import VerifyOtp from "@/pages/auth/VerifyOtp";
 // import ResendOTP from "@/pages/auth/ResendOtp";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
+import AppGate from "@/routes/AppGate";
 
 /* KYC Pages */
 import KycStart from "@/pages/kyc/KycStart";
@@ -27,6 +29,7 @@ import KycRoute from "@/routes/KycRoute";
 import UserDashboard from "@/pages/user/dashboard/UserDashboard";
 import Marketplace from "@/pages/user/marketplace/Marketplace";
 import UserPreferences from "@/pages/user/preferences/UserPreferences";
+import PreferenceForm from "@/pages/user/preferences/PreferenceForm";
 import MyInventory from "@/pages/user/inventory/MyInventory";
 import AddInventory from "@/pages/user/inventory/AddInventory";
 import MyListings from "@/pages/user/listings/MyListings";
@@ -37,6 +40,7 @@ import BidsReceivedDetail from "@/pages/user/bids-received/components/BidsReceiv
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
+
 
 const AppRoutes = () => {
   return (
@@ -73,7 +77,7 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* ---------- OTP ROUTES (Authenticated but OTP NOT verified) ---------- */}
-      
+
       {/* <Route
         path="/resend-otp"
         element={
@@ -84,7 +88,7 @@ const AppRoutes = () => {
       /> */}
 
       {/* ---------- KYC ROUTES (Authenticated + OTP verified) ---------- */}
-       <Route
+      <Route
         path="/kyc"
         element={
           <ProtectedRoute>
@@ -101,18 +105,39 @@ const AppRoutes = () => {
         <Route path="status" element={<KycStatus />} />
       </Route>
 
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <AppGate>
+              <Navigate to="/user" replace />
+            </AppGate>
+          </ProtectedRoute>
+        }
+      />
+
       {/* ---------- USER ROUTES (Dashboard, marketplace, etc.) ---------- */}
-            <Route
+      <Route
         path="/user"
         element={
           <ProtectedRoute>
-            <UserRoutes />
+            <AppGate>
+              <UserRoutes />
+            </AppGate>
           </ProtectedRoute>
         }
       >
         <Route index element={<UserDashboard />} />
         <Route path="marketplace" element={<Marketplace />} />
-        <Route path="preferences" element={<UserPreferences />} />
+
+
+        <Route path="preferences">
+          <Route index element={<UserPreferences />} />
+          <Route path="new" element={<PreferenceForm />} />
+          <Route path=":id/edit" element={<PreferenceForm />} />
+        </Route>
+
+        
         <Route path="inventory" element={<MyInventory />} />
         <Route path="inventory/add" element={<AddInventory />} />
         <Route path="listings" element={<MyListings />} />

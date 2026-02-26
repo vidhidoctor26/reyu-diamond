@@ -1,4 +1,6 @@
-export const ENDPOINTS = {  AUTH: {
+export const ENDPOINTS = { 
+  
+  AUTH: {
     REGISTER: "/auth/register",
     VERIFY_EMAIL: "/auth/verify-email",
     RESEND_OTP: "/auth/resend-otp",
@@ -18,4 +20,14 @@ KYC: {
     
   },
 
+REQUIREMENTS: {
+    LIST: "/requirements",
+    CREATE: "/requirements",
+    GET_ONE: (id: string) => `/requirements/${id}`,
+    UPDATE: (id: string) => `/requirements/${id}`,
+    DELETE: (id: string) => `/requirements/${id}`,
+  },
+
 };
+
+

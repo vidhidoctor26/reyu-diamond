@@ -8,16 +8,16 @@ import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/redux";
 import { kycActions } from "@/store/slices/kycSlice";
 
+
 /* ================= Component ================= */
 
 const ReviewSubmit = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { personalDetails, documents, loading, status } = useAppSelector(
+  const { personalDetails, documents, loading } = useAppSelector(
     (state) => state.kyc,
   );
-
   /* ---------- Redirect if missing data ---------- */
   useEffect(() => {
     if (!personalDetails) {
@@ -31,17 +31,6 @@ const ReviewSubmit = () => {
     }
   }, [personalDetails, documents, navigate]);
 
-  useEffect(() => {
-  if (
-    status === "PENDING" ||
-    status === "APPROVED" ||
-    status === "REJECTED"
-  ) {
-    navigate("/kyc/status");
-  }
-}, [status, navigate]);
-
-
   if (!personalDetails || !documents) return null;
 
   /* ---------- Mask Aadhaar ---------- */
@@ -51,6 +40,17 @@ const ReviewSubmit = () => {
   };
 
   const fullName = `${personalDetails.firstName} ${personalDetails.lastName}`;
+
+  /* ---------- Handle navigation after submission ---------- */
+  useEffect(() => {
+    if (!loading && personalDetails && documents) {
+      const sessionSubmitted = sessionStorage.getItem("kycSubmitted");
+      if (sessionSubmitted === "true") {
+        sessionStorage.removeItem("kycSubmitted");
+        navigate("/kyc/status");
+      }
+    }
+  }, [loading, navigate, personalDetails, documents]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -113,6 +113,7 @@ const ReviewSubmit = () => {
               onClick={() => {
                 if (!documents?.aadhaarFile || !documents?.panFile) return;
 
+                sessionStorage.setItem("kycSubmitted", "true");
                 dispatch(
                   kycActions.submitKycRequest({
                     aadhaarFile: documents.aadhaarFile,

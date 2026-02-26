@@ -27,26 +27,9 @@ const Login = () => {
 
   /* ================= Reset stale error on mount ================= */
 
-  useEffect(() => {
-    dispatch(authActions.resetFlow());
-  }, [dispatch]);
-
-  /* ================= Handle Successful Login ================= */
-  useEffect(() => {
-    if (flow.type === "VERIFY_EMAIL" && flow.status === "FAILURE") {
-      navigate("/verify-otp", {
-        replace: true,
-        state: {
-          email: flow.email,
-          mode: "VERIFY_EMAIL",
-        },
-      });
-    }
-
-    if (isAuthenticated && token) {
-      navigate("/kyc/start", { replace: true });
-    }
-  }, [flow, isAuthenticated, token, navigate]);
+  // useEffect(() => {
+  //   dispatch(authActions.resetFlow());
+  // }, [dispatch]);
 
   /* ================= Handle Login Error ================= */
 

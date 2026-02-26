@@ -12,10 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authActions } from "@/store/slices/authSlice";
 
 import {
   personalDetailsSchema,
-  type PersonalDetailsType
+  type PersonalDetailsType,
 } from "@/schemas/kyc/kyc.schema";
 
 /* ================= COMPONENT ================= */
@@ -24,30 +25,17 @@ const PersonalDetails = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { status, personalDetails } = useAppSelector((state) => state.kyc);
-
-  /* ===== Redirect if already verified ===== */
-  useEffect(() => {
-    if (status === "APPROVED") {
-      navigate("/user", { replace: true });
-      return;
-    }
-
-    if (status === "PENDING" || status === "REJECTED") {
-      navigate("/kyc/status", { replace: true });
-      return;
-    }
-  }, [status, navigate]);
+  const { personalDetails } = useAppSelector((state) => state.kyc);
 
   /* ===== FORM ===== */
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid }
+    formState: { errors, isValid },
   } = useForm<PersonalDetailsType>({
-     defaultValues: personalDetails,
+    defaultValues: personalDetails,
     resolver: zodResolver(personalDetailsSchema),
-    mode: "onChange"
+    mode: "onChange",
   });
 
   /* ===== SUBMIT ===== */
@@ -61,14 +49,26 @@ const PersonalDetails = () => {
     navigate("/kyc/document-upload");
   };
 
-  const handleSkipKyc = () => {
-    dispatch(kycActions.skipKyc());
-    navigate("/user", { replace: true });
-  };
+
+
+const handleSkipKyc = () => {
+  dispatch(kycActions.skipKyc());
+
+  dispatch(
+    authActions.setCompliance({
+      kycStatus: "PENDING",
+    })
+  );
+
+  navigate("/user", { replace: true });
+};
+
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12
-    bg-[radial-gradient(ellipse_at_top,_hsl(var(--accent)/0.38),_transparent_65%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--background)))]">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12
+    bg-[radial-gradient(ellipse_at_top,_hsl(var(--accent)/0.38),_transparent_65%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--background)))]"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,7 +81,6 @@ const PersonalDetails = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
             {/* Name */}
             <div className="grid md:grid-cols-3 gap-4">
               <Field label="First Name" error={errors.firstName?.message}>
@@ -158,7 +157,7 @@ export default PersonalDetails;
 const Field = ({
   label,
   error,
-  children
+  children,
 }: {
   label: string;
   error?: string;

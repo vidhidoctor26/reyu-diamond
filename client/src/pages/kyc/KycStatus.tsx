@@ -12,10 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import type { ReactNode, ElementType } from "react";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
-import { kycActions } from "@/store/slices/kycSlice";
+import { useAppSelector } from "@/hooks/redux";
+// import { kycActions } from "@/store/slices/kycSlice";
 
 /* ================= TYPES ================= */
 
@@ -101,25 +101,17 @@ const STATUS_CONFIG = {
 
 const KycStatus = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
-  const { status } = useAppSelector((state) => state.kyc);
+  const { kycStatus } = useAppSelector((state) => state.auth);
 
-  /* 🔹 fetch latest status */
-  useEffect(() => {
-    dispatch(kycActions.fetchKycStatusRequest());
-  }, [dispatch]);
+  if (!kycStatus) return null;
 
-  /* 🔹 redirect if not started */
-  useEffect(() => {
-    if (status === "NOT_STARTED") {
-      navigate("/kyc/start", { replace: true });
-    }
-  }, [status, navigate]);
+  if (kycStatus === "NOT_STARTED") {
+    navigate("/kyc/start", { replace: true });
+    return null;
+  }
 
-  if (status === "NOT_STARTED") return null;
-
-  const config = STATUS_CONFIG[status as KycStatusType];
+  const config = STATUS_CONFIG[kycStatus as KycStatusType];
   const Icon = config.icon;
 
   return (
