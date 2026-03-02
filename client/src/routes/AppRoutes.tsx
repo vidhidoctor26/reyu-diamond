@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet, useNavigate } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 
 /* Public */
@@ -31,7 +31,8 @@ import Marketplace from "@/pages/user/marketplace/Marketplace";
 import UserPreferences from "@/pages/user/preferences/UserPreferences";
 import PreferenceForm from "@/pages/user/preferences/PreferenceForm";
 import MyInventory from "@/pages/user/inventory/MyInventory";
-import AddInventory from "@/pages/user/inventory/AddInventory";
+import AddInventory from "@/pages/user/inventory/InventoryForm";
+import InventoryDetails from "@/pages/user/inventory/InventoryDetails";
 import MyListings from "@/pages/user/listings/MyListings";
 import CreateListing from "@/pages/user/listings/CreateListing";
 import MyBids from "@/pages/user/bids/MyBids";
@@ -40,7 +41,7 @@ import BidsReceivedDetail from "@/pages/user/bids-received/components/BidsReceiv
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
-
+import InventoryForm from "@/pages/user/inventory/InventoryForm";
 
 const AppRoutes = () => {
   return (
@@ -130,16 +131,17 @@ const AppRoutes = () => {
         <Route index element={<UserDashboard />} />
         <Route path="marketplace" element={<Marketplace />} />
 
-
         <Route path="preferences">
           <Route index element={<UserPreferences />} />
           <Route path="new" element={<PreferenceForm />} />
           <Route path=":id/edit" element={<PreferenceForm />} />
         </Route>
 
-        
         <Route path="inventory" element={<MyInventory />} />
-        <Route path="inventory/add" element={<AddInventory />} />
+        <Route path="inventory/add" element={<InventoryForm />} />
+        <Route path="inventory/edit/:id" element={<InventoryForm />} />
+        <Route path="inventory/view/:id" element={<InventoryDetails />} />
+  
         <Route path="listings" element={<MyListings />} />
         <Route path="listings/create" element={<CreateListing />} />
         <Route path="bids" element={<MyBids />} />

@@ -1,4 +1,5 @@
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Diamond,
@@ -37,7 +38,10 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const dispatch = useDispatch();
 
   const user = useSelector((state: any) => state.auth.user);
-  const kycStatus = useSelector((state: any) => state.auth.kycStatus);
+
+  const { kycStatus } = useAppSelector((state) => state.auth);
+
+  const isKycApproved = kycStatus === "APPROVED";
 
   const handleLogout = () => {
     if (onClose) onClose();
@@ -78,26 +82,43 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto scrollbar-premium">
         <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <NavLink
-                to={item.href}
-                end
-                onClick={handleNavClick}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-soft"
-                      : "text-muted-foreground hover:text-primary hover:bg-muted",
-                  )
-                }
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="font-medium">{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
+          {navItems.map((item: any) => {
+            const isDisabled = item.requireKyc && !isKycApproved;
+
+            return (
+              <li key={item.href}>
+                <NavLink
+                  to={isDisabled ? "#" : item.href}
+                  end
+                  onClick={(e) => {
+                    if (isDisabled) {
+                      e.preventDefault();
+                      navigate("/kyc/start");
+                    } else {
+                      handleNavClick();
+                    }
+                  }}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                      isDisabled
+                        ? "opacity-50  text-muted-foreground"
+                        : isActive
+                          ? "bg-primary text-primary-foreground shadow-soft"
+                          : "text-muted-foreground hover:text-primary hover:bg-muted",
+                    )
+                  }
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+
+                  {isDisabled && (
+                    <Shield className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
+                  )}
+                </NavLink>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 

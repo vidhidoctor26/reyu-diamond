@@ -5,11 +5,9 @@ import {
   Edit,
   Trash2,
   Upload,
+  Lock,
 } from "lucide-react";
-import {
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -20,48 +18,106 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import type { InventoryItem } from "./inventory.types";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/hooks/redux";
+import { deleteInventoryRequest } from "@/store/slices/inventorySlice";
+import { toast } from "@/hooks/use-toast";
 
-const InventoryRow = ({ item }: { item: InventoryItem }) => {
+interface Props {
+  item: InventoryItem;
+  onAddToAuction: (item: InventoryItem) => void;
+}
+
+const InventoryRow = ({ item, onAddToAuction }: Props) => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   const badgeClass =
     item.status === "available"
-      ? "bg-emerald-500/10 text-emerald-600"
-      : item.status === "listed"
-      ? "bg-accent/10 text-accent"
-      : "bg-blue-500/10 text-blue-600";
+      ? "bg-emerald-500/10 text-emerald-600 border-emerald-200"
+      : item.status === "sold"
+      ? "bg-blue-500/10 text-blue-600 border-blue-200"
+      : "bg-accent/10 text-accent border-accent/20";
+
+  const handleDelete = () => {
+    if (!item._id) return;
+
+    if (
+      window.confirm(
+        "Are you sure you want to delete this diamond? This action is permanent."
+      )
+    ) {
+      dispatch(
+        deleteInventoryRequest({
+          id: item._id,
+          onSuccess: () => {
+            toast({
+              title: "Deleted",
+              description: "Diamond removed from your inventory.",
+            });
+          },
+          onError: (message: string) => {
+            toast({
+              title: "Delete failed",
+              description: message,
+              variant: "destructive",
+            });
+          },
+        })
+      );
+    }
+  };
 
   return (
-    <TableRow>
+    <TableRow className={item.isLocked ? "opacity-70" : ""}>
       <TableCell>
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-            <Diamond className="h-6 w-6 text-accent/70" />
+          <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent/10 flex items-center justify-center border border-border/50">
+            {item.images?.length ? (
+              <img
+                src={item.images[0]}
+                alt={`${item.carat}ct ${item.shape}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Diamond className="h-6 w-6 text-accent/70" />
+            )}
           </div>
           <div>
-            <p className="font-medium text-primary">{item.name}</p>
-            <p className="text-sm text-muted-foreground">{item.id}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-primary">
+                {item.carat}ct {item.shape}
+              </p>
+              {item.isLocked && (
+                <Lock className="h-3 w-3 text-muted-foreground" />
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground font-mono">
+              {item.certificateNumber ||
+                item._id.slice(-6).toUpperCase()}
+            </p>
           </div>
         </div>
       </TableCell>
 
       <TableCell>
         <div className="flex gap-2">
-          <Badge variant="secondary">{item.carat}ct</Badge>
-          <Badge variant="secondary">{item.color}</Badge>
-          <Badge variant="secondary">{item.clarity}</Badge>
-          <Badge variant="secondary">{item.cut}</Badge>
+          <Badge variant="outline">{item.color}</Badge>
+          <Badge variant="outline">{item.clarity}</Badge>
+          <Badge variant="outline">{item.cut}</Badge>
         </div>
       </TableCell>
 
-      <TableCell className="text-muted-foreground">
-        {item.certNumber}
+      <TableCell className="font-semibold uppercase">
+        {item.lab}
       </TableCell>
 
-      <TableCell className="font-display font-semibold text-primary">
-        ${item.price.toLocaleString()}
+      <TableCell className="font-semibold">
+        ${item.price?.toLocaleString() || "0"}
       </TableCell>
 
       <TableCell>
-        <Badge className={badgeClass}>
+        <Badge variant="outline" className={badgeClass}>
           {item.status.replace("_", " ")}
         </Badge>
       </TableCell>
@@ -73,22 +129,54 @@ const InventoryRow = ({ item }: { item: InventoryItem }) => {
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Eye className="h-4 w-4 mr-2" /> View Details
+            <DropdownMenuItem
+              onClick={() =>
+                navigate(`/user/inventory/view/${item._id}`)
+              }
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View Details
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Edit className="h-4 w-4 mr-2" /> Edit
-            </DropdownMenuItem>
-            {item.status === "available" && (
-              <DropdownMenuItem>
-                <Upload className="h-4 w-4 mr-2" /> Create Listing
+
+            {!item.isLocked && (
+              <>
+                <DropdownMenuItem
+                  onClick={() =>
+                    navigate(`/user/inventory/edit/${item._id}`)
+                  }
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+
+                {item.status === "available" && (
+                  <DropdownMenuItem
+                    onClick={() => onAddToAuction(item)}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Add to Auction
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
+
+            {item.isLocked && (
+              <DropdownMenuItem disabled>
+                Item locked (active trade)
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> Delete
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>

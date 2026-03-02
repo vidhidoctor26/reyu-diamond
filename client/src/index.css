@@ -308,3 +308,18 @@
   top: -47px;
 }
 
+/* Ensure the calendar icon shows up and is clickable */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  display: block !important;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  display: block !important;
+  padding: 0;
+  cursor: pointer;
+}

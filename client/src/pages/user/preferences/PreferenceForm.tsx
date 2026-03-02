@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { mapPreferenceToApi } from "@/utils/mapPreferenceToApi";
-import api from "@/lib/api";
-import { ENDPOINTS } from "@/services/endpoints";
 import {
   Select,
   SelectContent,
@@ -49,7 +47,8 @@ import {
   CURRENCIES,
   LOCATIONS,
   type PreferenceFormData,
-} from "@/lib/schemas/preference";
+} from "@/schemas/user/preference.schema";
+import { PreferenceService } from "@/services/preference.service";
 
 /* ── Helpers ──────────────────────────────────── */
 
@@ -119,9 +118,9 @@ const PreferenceForm = () => {
 
     try {
       if (isEdit && id) {
-        await api.put(ENDPOINTS.REQUIREMENTS.UPDATE(id), payload);
+        await PreferenceService.update(id, payload);
       } else {
-        await api.post(ENDPOINTS.REQUIREMENTS.CREATE, payload);
+        await PreferenceService.create(payload);
       }
 
       toast({
@@ -139,34 +138,17 @@ const PreferenceForm = () => {
     }
   };
 
-  useEffect(() => {
-    if (!id) return;
+useEffect(() => {
+  if (!id) return;
 
-    api.get(ENDPOINTS.REQUIREMENTS.GET_ONE(id)).then((res) => {
-      const r = res.data.data;
+  PreferenceService.getOne(id).then((res) => {
+    const r = res.data.data;
 
-      form.reset({
-        shape: r.intent.shape?.[0],
-        caratMin: r.intent.carat.min,
-        caratMax: r.intent.carat.max,
-        color: r.intent.color?.[0],
-        clarity: r.intent.clarity?.[0],
-        lab: r.intent.lab,
-        labName: r.intent.labName?.[0],
-        budget: r.constraints.budget,
-        currency: r.constraints.currency,
-        location: r.constraints.location?.[0],
-        pricePerCaratMin: r.constraints.pricePerCarat?.min,
-        pricePerCaratMax: r.constraints.pricePerCarat?.max,
-        cut: r.preferences?.cut?.[0],
-        polish: r.preferences?.polish?.[0],
-        symmetry: r.preferences?.symmetry?.[0],
-        fluorescence: r.preferences?.fluorescence?.[0],
-        certification: r.preferences?.certificate?.[0],
-        notes: r.preferences?.notes,
-      });
+    form.reset({
+      ...r,
     });
-  }, [id]);
+  });
+}, [id]);
 
   const handleCancel = () => {
     if (id) sessionStorage.removeItem(`pref_edit_${id}`);

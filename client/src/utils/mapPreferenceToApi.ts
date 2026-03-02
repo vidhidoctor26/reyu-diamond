@@ -1,4 +1,4 @@
-import type { PreferenceFormData } from "@/lib/schemas/preference";
+import type { PreferenceFormData } from "@/schemas/user/preference.schema";
 
 export const mapPreferenceToApi = (data: PreferenceFormData) => {
   return {

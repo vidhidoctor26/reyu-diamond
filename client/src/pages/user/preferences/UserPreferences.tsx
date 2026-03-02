@@ -37,32 +37,32 @@ interface Preference {
 
 /* ── Mock seed data ────────────────────────────── */
 
-const SEED: Preference[] = [
-  {
-    id: "1",
-    shape: "Round",
-    caratMin: 1,
-    caratMax: 2.5,
-    color: "D",
-    clarity: "VVS1",
-    budgetMin: 5000,
-    budgetMax: 25000,
-    certification: "GIA",
-    createdAt: "2026-02-10T10:30:00Z",
-  },
-  {
-    id: "2",
-    shape: "Oval",
-    caratMin: 0.8,
-    caratMax: 1.5,
-    color: "F",
-    clarity: "VS1",
-    budgetMin: 3000,
-    budgetMax: 15000,
-    certification: "IGI",
-    createdAt: "2026-02-12T14:15:00Z",
-  },
-];
+// const SEED: Preference[] = [
+//   {
+//     id: "1",
+//     shape: "Round",
+//     caratMin: 1,
+//     caratMax: 2.5,
+//     color: "D",
+//     clarity: "VVS1",
+//     budgetMin: 5000,
+//     budgetMax: 25000,
+//     certification: "GIA",
+//     createdAt: "2026-02-10T10:30:00Z",
+//   },
+//   {
+//     id: "2",
+//     shape: "Oval",
+//     caratMin: 0.8,
+//     caratMax: 1.5,
+//     color: "F",
+//     clarity: "VS1",
+//     budgetMin: 3000,
+//     budgetMax: 15000,
+//     certification: "IGI",
+//     createdAt: "2026-02-12T14:15:00Z",
+//   },
+// ];
 
 /* ── Page Component ────────────────────────────── */
 

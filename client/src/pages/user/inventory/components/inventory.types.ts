@@ -2,6 +2,7 @@ export type InventoryStatus = "available" | "listed" | "in_deal";
 
 export interface InventoryItem {
   id: string;
+  images:string[];
   name: string;
   carat: number;
   color: string;
@@ -9,6 +10,6 @@ export interface InventoryItem {
   cut: string;
   price: number;
   status: InventoryStatus;
-  certNumber: string;
+  lab: string;
   addedDate: string;
 }
