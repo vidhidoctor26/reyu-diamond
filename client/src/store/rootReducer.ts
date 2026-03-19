@@ -3,7 +3,8 @@ import authReducer from "./slices/authSlice";
 import kycReducer from "./slices/kycSlice";
 import inventoryReducer from "./slices/inventorySlice";
 import auctionReducer from "./slices/auctionSlice";
-import listingReducer from "./slices/listingsSlice";
+import bidReducer from "./slices/bidSlice";
+
 
 
 const rootReducer = combineReducers({
@@ -11,7 +12,7 @@ const rootReducer = combineReducers({
   kyc: kycReducer,
   inventory: inventoryReducer,
   auction: auctionReducer,
-  listings: listingReducer,
+  bid: bidReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>; // ✅ REQUIRED

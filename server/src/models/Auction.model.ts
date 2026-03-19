@@ -114,7 +114,7 @@ const AuctionSchema: Schema<IAuction> = new Schema(
   }
 );
 
-AuctionSchema.index({ status: 1 , startDate: 1 });
+AuctionSchema.index({ status: 1, startDate: 1 });
 AuctionSchema.index({ status: 1, endDate: 1 });
 
 export const Auction: Model<IAuction> =

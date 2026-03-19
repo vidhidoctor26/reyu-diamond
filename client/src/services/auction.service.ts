@@ -1,58 +1,42 @@
 import api from "@/lib/api";
-import { ENDPOINTS } from "./endpoints";
+import { ENDPOINTS } from "@/services/endpoints";
 
-/* ---------------- CREATE AUCTION ---------------- */
-
-export const createAuction = (data: {
+// CREATE AUCTION
+export const createAuctionAPI = (data: {
   inventoryId: string;
   basePrice: number;
   startDate: string;
   endDate: string;
-}) =>
-  api.post(ENDPOINTS.AUCTIONS.CREATE, data);
+}) => {
+  return api.post(ENDPOINTS.AUCTIONS.CREATE, data);
+};
 
-/* ---------------- GET ALL AUCTIONS ---------------- */
+// FETCH ALL AUCTIONS (MARKETPLACE)
+export const fetchAuctionsAPI = (params?: any) => {
+  return api.get(ENDPOINTS.AUCTIONS.LIST, { params });
+};
 
-export const getAuctions = (params?: {
-  status?: string;
-  sellerId?: string;
-  inventoryId?: string;
-}) =>
-  api.get(ENDPOINTS.AUCTIONS.LIST, { params });
+// FETCH SINGLE AUCTION
+export const fetchAuctionByIdAPI = (id: string) => {
+  return api.get(ENDPOINTS.AUCTIONS.GET_ONE(id));
+};
 
-/* ---------------- GET ONE AUCTION ---------------- */
+// UPDATE AUCTION
+export const updateAuctionAPI = (id: string, data: any) => {
+  return api.put(ENDPOINTS.AUCTIONS.UPDATE(id), data);
+};
 
-export const getAuctionById = (id: string) =>
-  api.get(ENDPOINTS.AUCTIONS.GET_ONE(id));
+// DELETE AUCTION
+export const deleteAuctionAPI = (id: string) => {
+  return api.delete(ENDPOINTS.AUCTIONS.DELETE(id));
+};
 
-/* ---------------- UPDATE AUCTION ---------------- */
+// UPDATE STATUS (START / END / CANCEL)
+export const updateAuctionStatusAPI = (id: string, action: string) => {
+  return api.patch(ENDPOINTS.AUCTIONS.UPDATE_STATUS(id), { action });
+};
 
-export const updateAuction = (
-  id: string,
-  data: {
-    basePrice?: number;
-    startDate?: string;
-    endDate?: string;
-  }
-) =>
-  api.put(ENDPOINTS.AUCTIONS.UPDATE(id), data);
-
-/* ---------------- UPDATE STATUS ---------------- */
-
-export const updateAuctionStatus = (
-  id: string,
-  action: string
-) =>
-  api.patch(ENDPOINTS.AUCTIONS.UPDATE_STATUS(id), {
-    action,
-  });
-
-/* ---------------- AUTO CLOSE ---------------- */
-
-export const autoCloseAuction = (id: string) =>
-  api.patch(ENDPOINTS.AUCTIONS.AUTO_CLOSE(id));
-
-/* ---------------- DELETE ---------------- */
-
-export const deleteAuction = (id: string) =>
-  api.delete(ENDPOINTS.AUCTIONS.DELETE(id));
+// AUTO CLOSE
+export const autoCloseAuctionAPI = (id: string) => {
+  return api.post(ENDPOINTS.AUCTIONS.AUTO_CLOSE(id));
+};

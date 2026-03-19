@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/hooks/redux";
+import { auctionActions } from "@/store/slices/auctionSlice";
 import { 
   ArrowLeft, 
   Diamond, 
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+
 const inventoryItems = [
   { id: "INV-001", name: "Round Brilliant 2.5ct", specs: "D/VVS1/EX", price: 24500 },
   { id: "INV-002", name: "Oval Brilliant 2.0ct", specs: "D/IF/EX", price: 32100 },
@@ -33,6 +36,7 @@ const inventoryItems = [
 
 const CreateListing = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [formData, setFormData] = useState({
     inventoryItem: "",
     listingType: "fixed",
@@ -46,10 +50,45 @@ const CreateListing = () => {
 
   const selectedItem = inventoryItems.find(item => item.id === formData.inventoryItem);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate("/listings");
-  };
+ const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!formData.inventoryItem) {
+    return alert("Please select inventory item");
+  }
+
+  if (!formData.price) {
+    return alert("Please enter price");
+  }
+
+  if (formData.listingType !== "auction") {
+    alert("Only auction supported currently");
+    return;
+  }
+
+  const startDate = new Date().toISOString();
+
+  const endDate = new Date();
+  endDate.setDate(endDate.getDate() + Number(formData.duration));
+
+  dispatch(
+    auctionActions.createAuctionRequest({
+      inventoryId: formData.inventoryItem,
+      basePrice: Number(formData.price),
+      startDate,
+      endDate: endDate.toISOString(),
+
+      onSuccess: () => {
+        navigate("/user/listings");
+      },
+
+      onError: (err) => {
+        console.error(err);
+        alert(err);
+      },
+    })
+  );
+};
 
   return (
     <DashboardShell>

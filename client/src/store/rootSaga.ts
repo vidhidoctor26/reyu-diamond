@@ -3,7 +3,8 @@ import authSaga from "./sagas/authSaga";
 import kycSaga from "./sagas/kycSaga";
 import { inventorySaga } from "./sagas/inventorySaga";
 import auctionSaga from "./sagas/auctionSaga";
-import { listingsSaga } from "./sagas/listingsSaga";
+import bidSaga from "./sagas/bidSaga";
+
 
 export default function* rootSaga() {
   yield all([
@@ -11,6 +12,6 @@ export default function* rootSaga() {
     kycSaga(),
     inventorySaga(),
     auctionSaga(),
-    listingsSaga(),
+    bidSaga(),
   ]);
 }

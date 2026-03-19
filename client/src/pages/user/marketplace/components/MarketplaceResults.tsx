@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ListingCardGrid from "./ListingCardGrid";
 import ListingCardList from "./ListingCardList";
 
+
 interface MarketplaceResultsProps {
   listings: any[];
   viewMode: "grid" | "list";

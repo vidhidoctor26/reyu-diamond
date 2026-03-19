@@ -3,6 +3,9 @@ import { type PayloadAction } from "@reduxjs/toolkit";
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { authActions } from "../slices/authSlice";
+import { clearInventory } from "@/store/slices/inventorySlice";
+import { auctionActions } from "@/store/slices/auctionSlice";
+import { bidActions } from "@/store/slices/bidSlice";
 
 /* ================= TOKEN HELPER ================= */
 
@@ -66,19 +69,19 @@ function* loginWorker(
     yield put(
       authActions.loginSuccess({
         user: {
-          id: serverUser.id, // ✅ FIXED
+          id: serverUser._id || serverUser.id,   // ✅ _id first, fallback to id
+          _id: serverUser._id || serverUser.id,  // ✅ same value, both fields set
           name: serverUser.name,
           email: serverUser.email,
           role: serverUser.role,
         },
         token,
         accountStatus: serverUser.accountStatus,
-        kycStatus: serverUser.kycStatus, // ✅ USE BACKEND VALUE
+        kycStatus: serverUser.kycStatus,
       })
     );
   } catch (err: any) {
     setAuthToken(undefined);
-
     const status = err.response?.status;
     const response = err.response?.data;
 
@@ -87,16 +90,13 @@ function* loginWorker(
       response?.message?.toLowerCase().includes("email not verified")
     ) {
       yield put(authActions.startFlow("VERIFY_EMAIL"));
-      yield put(
-        authActions.flowFailure("Email not verified. Please verify OTP.")
-      );
+      yield put(authActions.flowFailure("Email not verified. Please verify OTP."));
       return;
     }
 
     yield put(authActions.loginFailure(response?.message || "Login failed"));
   }
 }
-
 /* ================= VERIFY OTP ================= */
 
 function* verifyOtpWorker(
@@ -231,13 +231,40 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
 
     yield put(
       authActions.hydrateSessionSuccess({
-        user,
+        user: {
+          id: user._id || user.id,   // ✅
+          _id: user._id || user.id,  // ✅
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
         accountStatus: user.accountStatus,
         kycStatus,
       }),
     );
   } catch (err) {
     yield put(authActions.hydrateSessionFailure());
+  }
+}
+
+function* logoutWorker(): Generator {
+  try {
+    // Clear token from storage + axios headers
+    setAuthToken(undefined);
+ 
+    // Clear all other slices first
+    yield put(clearInventory());
+    yield put(auctionActions.fetchAuctionsSuccess([]));
+    yield put(auctionActions.fetchMyAuctionsSuccess([]));
+    yield put(bidActions.resetBidState());
+ 
+    // Finally reset auth state
+    yield put(authActions.logoutSuccess());
+  } catch (err) {
+    // Even if clearing other slices fails, always clear auth + token
+    console.error("logoutWorker error:", err);
+    setAuthToken(undefined);
+    yield put(authActions.logoutSuccess());
   }
 }
 
@@ -257,4 +284,5 @@ export default function* authSaga(): Generator {
     authActions.hydrateSessionRequest.type,
     hydrateSessionWorker,
   );
+  yield takeLatest(authActions.logoutRequest.type, logoutWorker);
 }

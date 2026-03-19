@@ -25,7 +25,7 @@ const schema = z.object({
   basePrice: z.number().min(1, "Price is required"),
   startDate: z.date({ required_error: "Start date is required" }),
   endDate: z.date({ required_error: "End date is required" }),
-}).refine((data) => data.endDate > data.startDate, {
+}).refine((data) => data.endDate >= data.startDate, {
   message: "End date must be after start date",
   path: ["endDate"],
 });
@@ -48,18 +48,32 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
   });
 
   const onSubmit = (data: FormData) => {
+    const toStartOfDay = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(6, 0, 0, 0);   // 06:00 local = 00:30 UTC
+      return d.toISOString();
+    };
+
+    const toEndOfDay = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(23, 59, 0, 0); // 23:59 local = 18:29 UTC
+      return d.toISOString();
+    };
+
     dispatch(auctionActions.createAuctionRequest({
       inventoryId: item._id,
-      ...data,
-      startDate: data.startDate.toISOString(),
-      endDate: data.endDate.toISOString(),
+      basePrice: data.basePrice,
+      startDate: toStartOfDay(data.startDate), // ✅ start of day
+      endDate: toEndOfDay(data.endDate),       // ✅ end of day
       onSuccess: () => {
         toast({ title: "Auction Created", description: "Successfully listed." });
         onSuccess();
       },
-      onError: (msg: string) => toast({ title: "Error", description: msg, variant: "destructive" }),
+      onError: (msg: string) =>
+        toast({ title: "Error", description: msg, variant: "destructive" }),
     }));
   };
+
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -67,6 +81,7 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
         <div className="bg-[#1e293b] p-6 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl text-white">
+              <Gavel className="w-5 h-5 text-blue-400" />
               <Gavel className="w-5 h-5 text-blue-400" />
               Create Auction
             </DialogTitle>
@@ -94,9 +109,9 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
 
           {/* Date Pickers */}
           <div className="grid grid-cols-2 gap-4">
-            {[ 
-              { name: "startDate" as const, label: "Start Date" }, 
-              { name: "endDate" as const, label: "End Date" } 
+            {[
+              { name: "startDate" as const, label: "Start Date" },
+              { name: "endDate" as const, label: "End Date" }
             ].map((field) => (
               <div key={field.name} className="space-y-2">
                 <Label className="text-xs font-bold uppercase text-slate-500">{field.label}</Label>
@@ -122,7 +137,7 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
                           mode="single"
                           selected={value}
                           onSelect={onChange}
-                          disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                           initialFocus
                         />
                       </PopoverContent>

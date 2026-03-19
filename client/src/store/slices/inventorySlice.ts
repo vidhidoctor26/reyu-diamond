@@ -158,6 +158,13 @@ const inventorySlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+
+    clearInventory(state) {
+      state.items = [];
+      state.selectedItem = null;
+      state.loading = false;
+      state.error = null;
+    },
   },
 });
 
@@ -178,6 +185,7 @@ export const {
   deleteInventorySuccess,
   deleteInventoryFailure,
   clearSelectedInventory,
+  clearInventory,
 } = inventorySlice.actions;
 
 export default inventorySlice.reducer;

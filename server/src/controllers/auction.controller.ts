@@ -4,6 +4,8 @@ import { sendResponse } from "../utils/api.response";
 
 export const createAuction = async (req: any, res: Response, next: NextFunction) => {
   try {
+
+    console.log("🚀 CREATE AUCTION REQUEST BODY:", req.body);
     const { inventoryId, basePrice, startDate, endDate } = req.body;
     const userId = req.user._id;
 

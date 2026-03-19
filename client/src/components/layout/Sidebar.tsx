@@ -1,4 +1,5 @@
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,11 +21,8 @@ import {
 import { cn } from "@/lib/utils";
 import { userNav, userBottomNav } from "@/components/navigation/userNav";
 import { adminNav, adminBottomNav } from "@/components/navigation/adminNav";
-import { useDispatch, useSelector } from "react-redux";
 import { authActions } from "@/store/slices/authSlice";
-import { kycActions } from "@/store/slices/kycSlice";
 import { KycStatusBadge } from "@/components/KycStatusBadge";
-import api from "@/lib/api";
 
 interface SidebarProps {
   role?: "user" | "admin";
@@ -35,31 +33,26 @@ interface SidebarProps {
 const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const user = useSelector((state: any) => state.auth.user);
-
-  const { kycStatus } = useAppSelector((state) => state.auth);
-
+  const { user, kycStatus, isAuthenticated } = useAppSelector((state) => state.auth);
   const isKycApproved = kycStatus === "APPROVED";
+
+  // ✅ Navigate AFTER saga has set isAuthenticated → false
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogout = () => {
     if (onClose) onClose();
-
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
-    delete api.defaults.headers.common.Authorization;
-
-    dispatch(authActions.logout());
-
-    navigate("/login", { replace: true });
+    dispatch(authActions.logoutRequest());
+    // ❌ No navigate here — useEffect above fires when isAuthenticated flips
   };
 
   const navItems = role === "admin" ? adminNav : userNav;
   const bottomNavItems = role === "admin" ? adminBottomNav : userBottomNav;
-
-  const isActive = (href: string) =>
-    location.pathname === href || location.pathname.startsWith(href + "/");
 
   const handleNavClick = () => {
     if (onClose) onClose();
@@ -102,7 +95,7 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                     cn(
                       "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
                       isDisabled
-                        ? "opacity-50  text-muted-foreground"
+                        ? "opacity-50 text-muted-foreground"
                         : isActive
                           ? "bg-primary text-primary-foreground shadow-soft"
                           : "text-muted-foreground hover:text-primary hover:bg-muted",
@@ -111,7 +104,6 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
-
                   {isDisabled && (
                     <Shield className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
                   )}
@@ -163,14 +155,6 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                   <div className="font-medium text-primary text-sm">
                     {user?.name || "User"}
                   </div>
-                  {/* <div className="text-xs text-muted-foreground">
-                    {role === "admin"
-                      ? "Administrator"
-                      : kycStatus === "APPROVED"
-                        ? "Verified Trader"
-                        : "Trader"}
-                  </div> */}
-
                   <div className="mt-1">
                     <KycStatusBadge />
                   </div>
@@ -181,7 +165,7 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => navigate("/profile")}>
+              <DropdownMenuItem onClick={() => navigate("/user/profile")}>
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </DropdownMenuItem>
@@ -191,7 +175,7 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                 KYC Verification
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <DropdownMenuItem onClick={() => navigate("/user/settings")}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
@@ -220,13 +204,6 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
             <div className="font-medium text-primary text-sm">
               {user?.name || "User"}
             </div>
-            {/* <div className="text-xs text-muted-foreground">
-              {role === "admin"
-                ? "Administrator"
-                : kycStatus === "APPROVED"
-                  ? "Verified Trader"
-                  : "Trader"}
-            </div> */}
           </div>
         </div>
       </div>

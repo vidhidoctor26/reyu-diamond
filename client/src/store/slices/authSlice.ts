@@ -5,6 +5,7 @@ import api from "@/lib/api";
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   role: "user" | "admin";
@@ -45,7 +46,7 @@ const initialState: AuthState = {
   token: null,
   isAuthenticated: false,
 
-  accountStatus: null, // 🔥 ADD THIS
+  accountStatus: null,
 
   kycStatus: null,
   complianceLoaded: false,
@@ -157,7 +158,7 @@ const authSlice = createSlice({
         ? (action.payload.kycStatus.toUpperCase() as AuthState["kycStatus"])
         : null;
       state.isAuthenticated = true;
-      state.complianceLoaded = true; // ✅ Set to true on login
+      state.complianceLoaded = true;
     },
 
     loginFailure(state, action: PayloadAction<string>) {
@@ -211,7 +212,11 @@ const authSlice = createSlice({
 
     /* -------- LOGOUT -------- */
 
-    logout() {
+    // ✅ Saga trigger — dispatch this from UI
+    logoutRequest(_state) {},
+
+    // ✅ Called by saga after clearing all other slices
+    logoutSuccess() {
       localStorage.removeItem("token");
       sessionStorage.removeItem("token");
       delete api.defaults.headers.common.Authorization;

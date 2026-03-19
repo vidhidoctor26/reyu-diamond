@@ -14,6 +14,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// ✅ FIXED: No frontend business logic
+export const getDisplayStatus = (auction: any) => {
+  if (auction.status === "cancelled") return "Cancelled";
+
+  if (auction.status === "ended") {
+    return auction.locked ? "Deal Created" : "Ended";
+  }
+
+  if (auction.status === "active") return "Active";
+
+  return "Upcoming";
+};
+
 const ListingsFilters = ({
   activeTab,
   setActiveTab,
@@ -28,15 +41,18 @@ const ListingsFilters = ({
   >
     <Tabs value={activeTab} onValueChange={setActiveTab}>
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+
+        {/* ✅ FIXED: Correct mapping */}
         <TabsList className="bg-muted/50 p-1 rounded-xl">
           <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="paused">Paused</TabsTrigger>
-          <TabsTrigger value="sold">Sold</TabsTrigger>
-          <TabsTrigger value="expired">Expired</TabsTrigger>
+          <TabsTrigger value="ended">Ended</TabsTrigger>
+          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
         </TabsList>
 
         <div className="flex gap-3">
+          {/* Search */}
           <div className="relative md:w-64">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
@@ -47,6 +63,7 @@ const ListingsFilters = ({
             />
           </div>
 
+          {/* Sort */}
           <Select defaultValue="newest">
             <SelectTrigger className="w-[150px] h-11 rounded-xl">
               <ArrowUpDown className="h-4 w-4 mr-2" />
@@ -61,6 +78,7 @@ const ListingsFilters = ({
             </SelectContent>
           </Select>
         </div>
+
       </div>
     </Tabs>
   </motion.div>

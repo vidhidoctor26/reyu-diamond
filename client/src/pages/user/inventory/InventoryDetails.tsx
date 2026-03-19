@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import CreateAuctionModal from "./CreateAuctionModal";
 
 const InventoryDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +34,7 @@ const InventoryDetails = () => {
 
   // Redux State
   const { selectedItem, loading } = useAppSelector((state) => state.inventory);
+  const [selectedItemForAuction, setSelectedItemForAuction] = useState(null);
   const isLocked = Boolean(selectedItem?.locked);
 
   /* ============================
@@ -47,9 +49,24 @@ const InventoryDetails = () => {
     };
   }, [id, dispatch]);
 
+  const handleAddToAuction = () => {
+    if (!selectedItem) return;
+
+    if (selectedItem.status !== "available" || selectedItem.locked) {
+      toast({
+        title: "Not allowed",
+        description: "This item cannot be listed",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedItemForAuction(selectedItem);
+  };
+
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this diamond?") && id) {
-      dispatch(deleteInventoryRequest(id)); 
+      dispatch(deleteInventoryRequest(id));
       toast({ title: "Processing", description: "Deleting diamond..." });
       navigate("/user/inventory");
     }
@@ -126,7 +143,7 @@ const InventoryDetails = () => {
 
         {/* Main Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Left Section - Image/Media */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -136,9 +153,9 @@ const InventoryDetails = () => {
             <Card className="card-premium overflow-hidden border-none shadow-xl">
               <div className="aspect-square bg-gradient-to-br from-diamond-shimmer to-pearl relative flex items-center justify-center">
                 {diamond.images && diamond.images.length > 0 ? (
-                  <img 
-                    src={diamond.images[0]} 
-                    alt={diamond.title} 
+                  <img
+                    src={diamond.images[0]}
+                    alt={diamond.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -156,7 +173,7 @@ const InventoryDetails = () => {
           >
             <Card className="card-premium border-none shadow-lg">
               <CardContent className="p-6">
-                
+
                 {/* Specs Badges */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   <Badge variant="secondary" className="bg-secondary/50">{diamond.carat}ct</Badge>
@@ -197,16 +214,17 @@ const InventoryDetails = () => {
                       Edit
                     </Button>
 
-                    <Button 
+                    <Button
                       className="btn-champagne text-primary flex-1 sm:flex-none shadow-md"
-                      disabled={isLocked}
+                      disabled={isLocked || diamond.status !== "available"}
+                      onClick={handleAddToAuction}
                     >
                       <PlusCircle className="h-4 w-4 mr-2" />
-                      Create Listing
+                      Add to Auction
                     </Button>
 
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       className="flex-1 sm:flex-none"
                       disabled={isLocked}
                       onClick={handleDelete}
@@ -234,7 +252,23 @@ const InventoryDetails = () => {
             </Card>
           </motion.div>
         </div>
-      </div>
+      </div>{selectedItemForAuction && (
+        <CreateAuctionModal
+          item={selectedItemForAuction}
+          onClose={() => setSelectedItemForAuction(null)}
+          onSuccess={() => {
+            setSelectedItemForAuction(null);
+
+            toast({
+              title: "Success",
+              description: "Auction created successfully",
+            });
+
+            // optional: refetch inventory
+            if (id) dispatch(fetchInventoryByIdRequest(id));
+          }}
+        />
+      )}
     </DashboardShell>
   );
 };

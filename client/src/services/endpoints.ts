@@ -1,5 +1,4 @@
-export const ENDPOINTS = { 
-  
+export const ENDPOINTS = {
   AUTH: {
     REGISTER: "/auth/register",
     VERIFY_EMAIL: "/auth/verify-email",
@@ -15,12 +14,11 @@ export const ENDPOINTS = {
     UPDATE_PROFILE: "/user/update",
   },
 
-KYC: {
+  KYC: {
     SUBMIT: "/kyc/submit-kyc",
-    
   },
 
-REQUIREMENTS: {
+  REQUIREMENTS: {
     LIST: "/requirements",
     CREATE: "/requirements",
     GET_ONE: (id: string) => `/requirements/${id}`,
@@ -28,39 +26,30 @@ REQUIREMENTS: {
     DELETE: (id: string) => `/requirements/${id}`,
   },
 
-   INVENTORY: {
+  INVENTORY: {
     LIST: "/inventory",
     CREATE: "/inventory",
     GET_ONE: (id: string) => `/inventory/${id}`,
     UPDATE: (id: string) => `/inventory/${id}`,
     DELETE: (id: string) => `/inventory/${id}`,
 
-    // Media endpoints
     ADD_MEDIA: (id: string) => `/inventory/${id}/media`,
     REPLACE_MEDIA: (id: string) => `/inventory/${id}/media`,
     REMOVE_MEDIA: (id: string) => `/inventory/${id}/media`,
   },
 
   AUCTIONS: {
-  LIST: "/auctions",
-  CREATE: "/auctions",
-  GET_ONE: (id: string) => `/auctions/${id}`,
-  UPDATE: (id: string) => `/auctions/${id}`,
-  DELETE: (id: string) => `/auctions/${id}`,
-  UPDATE_STATUS: (id: string) => `/auctions/${id}/status`,
-  AUTO_CLOSE: (id: string) => `/auctions/${id}/auto-close`,
-},
+    LIST: "/auctions",        
+    CREATE: "/auctions",
+    GET_ONE: (id: string) => `/auctions/${id}`,
+    UPDATE: (id: string) => `/auctions/${id}`,
+    DELETE: (id: string) => `/auctions/${id}`,
 
-  LISTINGS: {
-    LIST_ALL: "/listings",              // Marketplace
-    LIST_MY: "/listings/my",            // MyListings
-    CREATE: "/listings",
-    GET_ONE: (id: string) => `/listings/${id}`,
-    UPDATE: (id: string) => `/listings/${id}`,
-    DELETE: (id: string) => `/listings/${id}`,
-    UPDATE_STATUS: (id: string) => `/listings/${id}/status`,
+    UPDATE_STATUS: (id: string) => `/auctions/${id}/status`,
+    AUTO_CLOSE: (id: string) => `/auctions/${id}/auto-close`,
+
+
+    PLACE_BID: (id: string) => `/auctions/${id}/bid`,
+    BID_HISTORY: (id: string) => `/auctions/${id}/bids`,
   },
-
 };
-
-

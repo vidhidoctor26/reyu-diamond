@@ -38,6 +38,7 @@ import CreateListing from "@/pages/user/listings/CreateListing";
 import MyBids from "@/pages/user/bids/MyBids";
 import BidsOnMyListings from "@/pages/user/bids-received/BidsOnMyListings";
 import BidsReceivedDetail from "@/pages/user/bids-received/components/BidsReceivedDetail";
+import MarketplaceDetailPage from "@/pages/user/marketplace/MarketplaceDetailPage";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -130,6 +131,7 @@ const AppRoutes = () => {
       >
         <Route index element={<UserDashboard />} />
         <Route path="marketplace" element={<Marketplace />} />
+        <Route path="marketplace/:id" element={<MarketplaceDetailPage />} />
 
         <Route path="preferences">
           <Route index element={<UserPreferences />} />
@@ -150,6 +152,7 @@ const AppRoutes = () => {
           path="bids/received/:listingId"
           element={<BidsReceivedDetail />}
         />
+        
       </Route>
 
       {/* ---------- FALLBACK ---------- */}

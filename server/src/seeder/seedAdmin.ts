@@ -7,7 +7,7 @@ dotenv.config()
 const seedAdmin = async () => {
   await mongoose.connect(process.env.MONGO_URI as string)
 
-  const email = "jinaljain56811@gmail.com"
+  const email = "vidhidoctor26@gmail.com"
 
   const exists = await User.findOne({ email })
   if (exists) {
