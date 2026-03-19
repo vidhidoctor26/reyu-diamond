@@ -1,0 +1,63 @@
+import { call, put, takeLatest } from "redux-saga/effects";
+import { bidActions } from "../slices/bidSlice";
+import {
+  placeBidAPI,
+  getMyBidAPI,
+  getHighestBidAPI,
+  getBidsByAuctionAPI,
+} from "@/services/bid.service";
+
+function* placeBidSaga(action: any): any {
+  try {
+    const { onSuccess, onError, ...data } = action.payload;
+    console.log("🚀 PLACING BID:", data);
+    
+    const response = yield call(placeBidAPI, data);
+    console.log("✅ BID RESPONSE:", response.data);
+    
+    yield put(bidActions.placeBidSuccess(response.data.data));
+    if (onSuccess) onSuccess();
+  } catch (error: any) {
+    console.log("❌ STATUS:", error?.response?.status);
+    console.log("❌ MESSAGE:", error?.response?.data?.message);
+    console.log("❌ FULL ERROR DATA:", error?.response?.data);
+    
+    const message = error?.response?.data?.message || error.message;
+    yield put(bidActions.placeBidFailure(message));
+    if (action.payload.onError) action.payload.onError(message);
+  }
+}
+
+function* fetchMyBidSaga(action: any): any {
+  try {
+    const response = yield call(getMyBidAPI, action.payload);
+    yield put(bidActions.fetchMyBidSuccess(response.data.data));
+  } catch (error: any) {
+    yield put(bidActions.fetchMyBidFailure(error?.response?.data?.message || error.message));
+  }
+}
+
+function* fetchHighestBidSaga(action: any): any {
+  try {
+    const response = yield call(getHighestBidAPI, action.payload);
+    yield put(bidActions.fetchHighestBidSuccess(response.data.data));
+  } catch (error: any) {
+    yield put(bidActions.fetchHighestBidFailure(error?.response?.data?.message || error.message));
+  }
+}
+
+function* fetchAuctionBidsSaga(action: any): any {
+  try {
+    const response = yield call(getBidsByAuctionAPI, action.payload);
+    yield put(bidActions.fetchAuctionBidsSuccess(response.data.data));
+  } catch (error: any) {
+    yield put(bidActions.fetchAuctionBidsFailure(error?.response?.data?.message || error.message));
+  }
+}
+
+export default function* bidSaga() {
+  yield takeLatest(bidActions.placeBidRequest.type,         placeBidSaga);
+  yield takeLatest(bidActions.fetchMyBidRequest.type,       fetchMyBidSaga);
+  yield takeLatest(bidActions.fetchHighestBidRequest.type,  fetchHighestBidSaga);
+  yield takeLatest(bidActions.fetchAuctionBidsRequest.type, fetchAuctionBidsSaga);
+}
