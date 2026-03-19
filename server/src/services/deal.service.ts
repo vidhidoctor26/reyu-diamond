@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import { Deal, DealStatus, DEAL_TRANSITIONS } from "../models/Deal.model";
+import {User} from "../models/User.model";
 import { Bid } from "../models/Bid.model";
 import { Auction } from "../models/Auction.model";
 import { Inventory } from "../models/Inventory.model";
 import Escrow from "../models/Escrow.model";
 import { releaseEscrowService , refundEscrowService } from "../services/escrow.service";
+import { handleDealCancelled} from "./user-stats.service";
 
 /**
  * Deal will be created automatically when bid is ACCEPTED
@@ -17,10 +19,6 @@ export const createDealService = async (
 ) => {
   const bid = await Bid.findById(bidId).session(session);
   if (!bid) throw new Error("Bid not found");
-
-  if (bid.status !== "ACCEPTED") {
-    throw new Error("Only accepted bids can create deal");
-  }
 
   const auction = await Auction.findById(bid.auctionId).session(session);
   if (!auction) throw new Error("Auction not found");
@@ -39,9 +37,6 @@ export const createDealService = async (
   if (existingDeal) throw new Error("Deal already exists for this bid");
 
   // Inventory must already be moved to memo by bid accept logic
-  if (inventory.status !== "on_memo") {
-    throw new Error("Inventory must be on memo before deal creation");
-  }
 
   const [deal] = await Deal.create(
     [
@@ -78,10 +73,17 @@ export const updateDealStatusService = async (
   dealId: string,
   newStatus: DealStatus,
   userId: string,
-  role: string
+  role: string,
+  note?: string,
+  shippingData?: {
+    courier?: string;
+    trackingNumber?: string;
+  }
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
+
+  let sellerIdForStats: mongoose.Types.ObjectId | null = null;
 
   try {
     const deal = await Deal.findById(dealId).session(session);
@@ -89,95 +91,66 @@ export const updateDealStatusService = async (
 
     const allowed = DEAL_TRANSITIONS[deal.status];
     if (!allowed.includes(newStatus)) {
-      throw new Error(`Invalid transition from ${deal.status} to ${newStatus}`);
+      throw new Error(
+        `Invalid transition from ${deal.status} to ${newStatus}`
+      );
     }
 
     const isSeller = deal.sellerId.toString() === userId;
     const isBuyer = deal.buyerId.toString() === userId;
     const isAdmin = role === "admin";
 
-    // Role validation
     switch (newStatus) {
       case "SHIPPED":
         if (!isSeller && !isAdmin) {
           throw new Error("Only seller/admin can mark shipped");
         }
+
         deal.sellerConfirmedShipped = true;
+        deal.shipping = {
+          ...deal.shipping,
+          courier: shippingData?.courier,
+          trackingNumber: shippingData?.trackingNumber,
+          shippedAt: new Date(),
+        };
+
         break;
 
       case "DELIVERED":
         if (!isBuyer && !isAdmin) {
           throw new Error("Only buyer/admin can confirm delivery");
         }
+
         deal.buyerConfirmedDelivered = true;
+        deal.shipping = {
+          ...deal.shipping,
+          deliveredAt: new Date(),
+        };
         break;
 
       case "DISPUTED":
         if (!isBuyer && !isSeller && !isAdmin) {
           throw new Error("Only participants/admin can dispute");
         }
-        break;
 
-      case "CANCELLED":
-        if (!isBuyer && !isSeller && !isAdmin) {
-          throw new Error("Not allowed to cancel deal");
-        }
-        break;
-
-      case "COMPLETED":
-        if (!isAdmin) {
-          throw new Error("Only admin/system can complete deal");
-        }
+        deal.dispute = {
+          reason: note || "Dispute raised",
+          raisedBy: new mongoose.Types.ObjectId(userId),
+          raisedAt: new Date(),
+        };
         break;
     }
 
-    // Update deal status
     deal.status = newStatus;
 
     deal.history.push({
       status: newStatus,
-      changedBy: userId as any,
+      changedBy: new mongoose.Types.ObjectId(userId),
       changedAt: new Date(),
+      note: note || "",
     });
 
-    // Auto timestamps
-    if (newStatus === "SHIPPED") {
-      deal.shipping = {
-        ...deal.shipping,
-        shippedAt: new Date(),
-      };
-    }
-
-    if (newStatus === "DELIVERED") {
-      deal.shipping = {
-        ...deal.shipping,
-        deliveredAt: new Date(),
-      };
-    }
-
     await deal.save({ session });
-
-    // Update inventory based on deal status
-    const inventory = await Inventory.findById(deal.inventoryId).session(
-      session
-    );
-
-    if (inventory) {
-      // Deal completed => Sold
-      if (newStatus === "COMPLETED") {
-        inventory.status = "sold";
-        inventory.locked = true;
-        inventory.price = deal.dealAmount;
-        await inventory.save({ session });
-      }
-
-      // Deal cancelled => Back available
-      if (newStatus === "CANCELLED") {
-        inventory.status = "available";
-        inventory.locked = false;
-        await inventory.save({ session });
-      }
-    }
 
     await session.commitTransaction();
     session.endSession();
@@ -231,7 +204,8 @@ export const getDealsForUserService = async (userId: string, role: string) => {
 export const cancelDealService = async (
   dealId: string,
   userId: string,
-  role: string
+  role: string,
+  note?: string
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -262,7 +236,7 @@ export const cancelDealService = async (
       session.endSession();
 
       // refund service uses its own transaction
-      return await refundEscrowService(dealId, userId, role);
+      return await refundEscrowService(dealId, userId, role , note!);
     }
 
     // if payment was initiated but not held
@@ -278,12 +252,19 @@ export const cancelDealService = async (
       status: "CANCELLED",
       changedBy: userId as any,
       changedAt: new Date(),
+      note : note || ""
     });
 
     await deal.save({ session });
 
     await session.commitTransaction();
     session.endSession();
+    
+    await handleDealCancelled({
+      cancelledBy: userId as any,
+      buyerId: deal.buyerId,
+      sellerId: deal.sellerId
+    });
 
     return {
       deal,
@@ -300,7 +281,8 @@ export const raiseDisputeService = async (
   dealId: string,
   reason: string,
   userId: string,
-  role: string
+  role: string,
+  note?: string,
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -341,6 +323,7 @@ export const raiseDisputeService = async (
       status: "DISPUTED",
       changedBy: userId as any,
       changedAt: new Date(),
+      note : note || ""
     });
 
     await deal.save({ session });
@@ -361,7 +344,8 @@ export const resolveDisputeService = async (
   resolution: "REFUND_BUYER" | "RELEASE_SELLER",
   adminNote: string,
   userId: string,
-  role: string
+  role: string,
+  note?: string,
 ) => {
   if (role !== "admin") {
     throw new Error("Only admin can resolve disputes");
@@ -397,11 +381,11 @@ export const resolveDisputeService = async (
 
   // now execute action based on resolution
   if (resolution === "REFUND_BUYER") {
-    return await refundEscrowService(dealId, userId, role);
+    return await refundEscrowService(dealId, userId, role , note!);
   }
 
   if (resolution === "RELEASE_SELLER") {
-    return await releaseEscrowService(dealId, userId, role);
+    return await releaseEscrowService(dealId, userId, role , note!);
   }
 
   throw new Error("Invalid resolution type");

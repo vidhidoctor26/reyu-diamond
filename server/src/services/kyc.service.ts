@@ -185,16 +185,3 @@ export const getKycs = async (page = 1, limit = 10, status?: string) => {
 
   return { data, total };
 };
-
-export const getMyKycStatus = async (userId: string) => {
-  const kyc = await KYC.findOne({ userId });
-
-  if (!kyc) {
-    return { status: "NOT_STARTED" };
-  }
-
-  return {
-    status: kyc.status,
-    rejectionReason: kyc.rejectionReason || null,
-  };
-};

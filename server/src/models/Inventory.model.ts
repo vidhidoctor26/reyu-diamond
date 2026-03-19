@@ -38,7 +38,7 @@ export interface IInventory extends Document {
 
   // Pricing
   price: number;             // final / buy-now price
-  startingPrice?: number;    // OPTIONAL – only for auction
+  startingPrice: number;    // OPTIONAL – only for auction
   currency: string;
 
   // State
@@ -142,6 +142,7 @@ const InventorySchema = new Schema<IInventory>(
     startingPrice: {
       type: Number,
       min: 0,
+      required : true
     },
 
     currency: {
@@ -183,14 +184,21 @@ const InventorySchema = new Schema<IInventory>(
 );
 
 
-InventorySchema.index({
-  shape: 1,
-  carat: 1,
-  color: 1,
-  clarity: 1,
-  lab: 1,
-  location: 1,
-});
+InventorySchema.index(
+  {
+    sellerId: 1,
+    shape: 1,
+    carat: 1,
+    color: 1,
+    clarity: 1,
+    lab: 1,
+    location: 1,
+  },
+  { 
+    unique: true,
+    name: "unique_inventory_per_seller",
+  }
+);
 
 export const Inventory: Model<IInventory> =
   mongoose.model<IInventory>("Inventory", InventorySchema);

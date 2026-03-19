@@ -2,13 +2,23 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { isValidEmail } from "../utils/email.validator";
 
+export interface IUserStats {
+  averageRating : number;
+  totalRatings : number;
+  reputationScore : number;
+  badgeCount : number;
+
+  completedDeals : number;
+  cancelDeals : number;
+  totalVolume : number;
+  totalShipments : number;
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
   role: "admin" | "user";
-
-  accountStatus: "ACTIVE" | "SUSPENDED" | "REJECTED";
 
   otp?: string;
   otpExpiresAt?: Date;
@@ -18,9 +28,12 @@ export interface IUser extends Document {
   isKycVerified: boolean;
 
   stripeAccountId?: string;
+  fcmTokens?: string[];
   stripeOnboardingStatus?: "NOT_CREATED" | "PENDING" | "COMPLETED";
   stripeChargesEnabled?: boolean;
   stripePayoutsEnabled?: boolean;
+
+  stats : IUserStats;
 
   comparePassword(enteredPassword: string): Promise<boolean>;
 }
@@ -59,12 +72,6 @@ const userSchema: Schema<IUser> = new Schema(
       trim: true,
     },
 
-    accountStatus: {
-      type: String,
-      enum: ["ACTIVE", "SUSPENDED", "REJECTED"],
-      default: "ACTIVE",
-    },
-
     otp: {
       type: String,
       select: false,
@@ -97,6 +104,11 @@ const userSchema: Schema<IUser> = new Schema(
       default: null,
     },
 
+    fcmTokens: {
+      type: [String],
+      default: [],
+    },
+
     stripeOnboardingStatus: {
       type: String,
       enum: ["NOT_CREATED", "PENDING", "COMPLETED"],
@@ -112,8 +124,20 @@ const userSchema: Schema<IUser> = new Schema(
       type: Boolean,
       default: false,
     },
+
+    stats : {
+      averageRating : {type : Number , default : 0 , min : 0 , max : 5},
+      totalRatings : { type : Number , default : 0 , min : 0},
+      reputationScore: { type: Number, default: 0, min: 0, max: 1000 },
+      badgeCount: { type: Number, default: 0, min: 0 },
+
+      completedDeals: { type: Number, default: 0, min: 0 },
+      cancelDeals: { type: Number, default: 0, min: 0 },
+      totalVolume: { type: Number, default: 0, min: 0 },
+      totalShipments: { type: Number, default: 0, min: 0 },
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 userSchema.pre<IUser>("save", async function () {
@@ -123,7 +147,7 @@ userSchema.pre<IUser>("save", async function () {
 
 // Compare entered password with hashed password
 userSchema.methods.comparePassword = async function (
-  enteredPassword: string,
+  enteredPassword: string
 ): Promise<boolean> {
   return bcrypt.compare(enteredPassword, this.password);
 };

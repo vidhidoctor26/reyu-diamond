@@ -15,7 +15,7 @@ export interface IRequirement {
     labName?: string[]; // optional: preferred labs
   };
 
-  constraints: {       
+  constraints: {
     budget: number;
     currency: string;
     location: string[];
@@ -25,7 +25,7 @@ export interface IRequirement {
     };
   };
 
-  preferences?: {   
+  preferences?: {
     cut?: string[];
     polish?: string[];
     symmetry?: string[];

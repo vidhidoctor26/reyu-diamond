@@ -121,13 +121,3 @@ export const getKycs = async (req: any, res: any, next: any) => {
     next(err);
   }
 };
-
-export const getMyKycStatus = async (req: any, res: any, next: any) => {
-  try {
-    const kyc = await KycService.getMyKycStatus(req.user._id);
-
-    return sendResponse(res, 200, true, "KYC status fetched", kyc);
-  } catch (err) {
-    next(err);
-  }
-};
