@@ -4,6 +4,7 @@ import kycSaga from "./sagas/kycSaga";
 import { inventorySaga } from "./sagas/inventorySaga";
 import auctionSaga from "./sagas/auctionSaga";
 import bidSaga from "./sagas/bidSaga";
+import dealSaga from "./sagas/dealSaga";
 
 
 export default function* rootSaga() {
@@ -13,5 +14,6 @@ export default function* rootSaga() {
     inventorySaga(),
     auctionSaga(),
     bidSaga(),
+    dealSaga(),
   ]);
 }

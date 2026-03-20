@@ -76,8 +76,8 @@ export const deleteInventory = async (inventoryId: string) => {
 
 /* ================= GET ================= */
 
-export const getInventory = async () => {
-  return Inventory.find().sort({ createdAt: -1 });
+export const getInventory = async (sellerId: string) => {
+  return Inventory.find({ sellerId }).sort({ createdAt: -1 });
 };
 
 export const getInventoryByIdOrBarcode = async (value: string) => {

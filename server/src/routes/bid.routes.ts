@@ -9,6 +9,8 @@ const router = Router();
 // Buyer creates bid
 router.post("/", BidController.createBid);
 
+
+
 // Seller/Admin updates bid status
 router.patch("/:bidId/status", BidController.updateBidStatus);
 
@@ -27,5 +29,11 @@ router.get(
 
 // Buyer my bid
 router.get("/my/:auctionId", BidController.getMyBid);
+
+// Buyer can see all their bids
+router.get("/my", protect, BidController.getMyAllBids);
+
+// Seller/Admin can see bids on their listings
+router.get("/received", protect, BidController.getBidsOnMyListings);
 
 export default router;

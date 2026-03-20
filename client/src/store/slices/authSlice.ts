@@ -13,11 +13,11 @@ export interface User {
 
 interface AuthFlowState {
   type:
-    | "NONE"
-    | "SIGNUP"
-    | "VERIFY_EMAIL"
-    | "FORGOT_PASSWORD"
-    | "RESET_PASSWORD";
+  | "NONE"
+  | "SIGNUP"
+  | "VERIFY_EMAIL"
+  | "FORGOT_PASSWORD"
+  | "RESET_PASSWORD";
   status: "IDLE" | "LOADING" | "SUCCESS" | "FAILURE";
   email?: string;
   otp?: string;
@@ -71,7 +71,7 @@ const authSlice = createSlice({
     signupRequest(
       _state,
       _action: PayloadAction<{ name: string; email: string; password: string }>,
-    ) {},
+    ) { },
 
     verifyOtpRequest(
       _state,
@@ -80,9 +80,9 @@ const authSlice = createSlice({
         otp: string;
         mode: "VERIFY_EMAIL" | "FORGOT_PASSWORD";
       }>,
-    ) {},
+    ) { },
 
-    forgotPasswordRequest(_state, _action: PayloadAction<{ email: string }>) {},
+    forgotPasswordRequest(_state, _action: PayloadAction<{ email: string }>) { },
 
     resetPasswordRequest(
       _state,
@@ -91,9 +91,9 @@ const authSlice = createSlice({
         otp: string;
         newPassword: string;
       }>,
-    ) {},
+    ) { },
 
-    resendOtpRequest(_state, _action: PayloadAction<{ email: string }>) {},
+    resendOtpRequest(_state, _action: PayloadAction<{ email: string }>) { },
 
     /* -------- FLOW MANAGEMENT -------- */
 
@@ -213,7 +213,7 @@ const authSlice = createSlice({
     /* -------- LOGOUT -------- */
 
     // ✅ Saga trigger — dispatch this from UI
-    logoutRequest(_state) {},
+    logoutRequest(_state) { },
 
     // ✅ Called by saga after clearing all other slices
     logoutSuccess() {

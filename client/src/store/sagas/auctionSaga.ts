@@ -4,20 +4,19 @@ import {
   fetchAuctionsAPI,
   createAuctionAPI,
   fetchAuctionByIdAPI,
+  deleteAuctionAPI,
+  updateAuctionAPI,
 } from "@/services/auction.service";
 
 function* fetchAuctionsSaga(action: any): any {
   try {
-    const response = yield call(fetchAuctionsAPI, action.payload);
-    // Backend structure: { success: true, data: [...] }
-    const auctions = response.data.data; 
+    const response = yield call(fetchAuctionsAPI); // no params
+    const auctions = response.data.data;
     yield put(auctionActions.fetchAuctionsSuccess(auctions));
   } catch (error: any) {
-    yield put(
-      auctionActions.fetchAuctionsFailure(
-        error?.response?.data?.message || error.message
-      )
-    );
+    yield put(auctionActions.fetchAuctionsFailure(
+      error?.response?.data?.message || error.message
+    ));
   }
 }
 
@@ -64,9 +63,39 @@ function* createAuctionSaga(action: any): any {
   }
 }
 
+function* updateAuctionSaga(action: any): any {
+  try {
+    const { auctionId, updates, onSuccess, onError } = action.payload;
+    const response = yield call(updateAuctionAPI, auctionId, updates);
+    yield put(auctionActions.updateAuctionSuccess(response.data.data));
+    if (onSuccess) onSuccess();
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || error.message;
+    yield put(auctionActions.updateAuctionFailure(msg));
+    if (action.payload.onError) action.payload.onError(msg);
+  }
+}
+
+function* deleteAuctionSaga(action: any): any {
+  try {
+    const { auctionId, onSuccess, onError } = action.payload;
+    yield call(deleteAuctionAPI, auctionId);
+    yield put(auctionActions.deleteAuctionSuccess(auctionId));
+    if (onSuccess) onSuccess();
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || error.message;
+    yield put(auctionActions.deleteAuctionFailure(msg));
+    if (action.payload.onError) action.payload.onError(msg);
+  }
+}
+
+
+
 export default function* auctionSaga() {
   yield takeLatest(auctionActions.fetchAuctionsRequest.type, fetchAuctionsSaga);
   yield takeLatest(auctionActions.fetchAuctionByIdRequest.type, fetchAuctionByIdSaga);
   yield takeLatest(auctionActions.createAuctionRequest.type, createAuctionSaga);
   yield takeLatest(auctionActions.fetchMyAuctionsRequest.type,fetchMyAuctionsSaga);
+  yield takeLatest(auctionActions.updateAuctionRequest.type, updateAuctionSaga);
+yield takeLatest(auctionActions.deleteAuctionRequest.type, deleteAuctionSaga);
 }

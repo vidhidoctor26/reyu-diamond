@@ -102,3 +102,33 @@ export const getMyBid = async (
     next(error);
   }
 };
+
+export const getMyAllBids = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const buyerId = req.user!._id.toString();
+    const bids = await bidService.getMyAllBidsService(buyerId);
+    return sendResponse(res, 200, true, "My bids fetched", bids);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBidsOnMyListings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.user!._id.toString();
+    console.log(" Fetching bids on my listings for sellerId:", sellerId);
+    const bids = await bidService.getBidsOnMyListingsService(sellerId);
+    console.log("Bids on my listings:", bids);
+    return sendResponse(res, 200, true, "Bids fetched", bids);
+  } catch (error) {
+    next(error);
+  }
+};

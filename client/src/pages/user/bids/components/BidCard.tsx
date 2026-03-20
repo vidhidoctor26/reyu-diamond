@@ -1,23 +1,16 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Diamond, MoreVertical, ExternalLink, Eye} from "lucide-react";
+import { Diamond, MoreVertical, ExternalLink, Eye } from "lucide-react";
 import BidStatusBadge from "./BidStatusBadge";
-
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: "short", day: "numeric", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   });
 
 const BidCard = ({ bid }: any) => (
@@ -32,25 +25,23 @@ const BidCard = ({ bid }: any) => (
           <div>
             <div className="flex items-center gap-3 mb-1">
               <Link
-                to={`/marketplace/${bid.listingId}`}
+                to={`/user/marketplace/${bid.listingId}`}
                 className="font-semibold text-primary hover:underline"
               >
                 {bid.listingName}
               </Link>
               <BidStatusBadge status={bid.status} />
+              {bid.isHighest && (
+                <span className="text-xs text-emerald-600 font-medium">
+                  Highest Bid
+                </span>
+              )}
             </div>
 
             <p className="text-sm text-muted-foreground">{bid.specs}</p>
-
             <p className="text-xs text-muted-foreground mt-1">
               Seller: {bid.seller} • {formatDate(bid.placedAt)}
             </p>
-
-            {bid.note && (
-              <p className="text-sm italic text-muted-foreground mt-2">
-                “{bid.note}”
-              </p>
-            )}
           </div>
         </div>
 
@@ -65,33 +56,27 @@ const BidCard = ({ bid }: any) => (
             </p>
           </div>
 
-      <DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="ghost" size="icon" className="hover:bg-muted">
-      <MoreVertical className="h-5 w-5" />
-    </Button>
-  </DropdownMenuTrigger>
-
-  <DropdownMenuContent align="end" className="w-48">
-    <DropdownMenuItem asChild>
-      <Link to={`/marketplace/${bid.listingId}`} className="cursor-pointer">
-        <Eye className="h-4 w-4 mr-2" />
-        View Listing
-      </Link>
-    </DropdownMenuItem>
-
-    {/* Only show "View Deal" if the bid has been accepted */}
-    {bid.status === "accepted" && (
-      <DropdownMenuItem asChild>
-        <Link to={`/deals/${bid.id}`} className="cursor-pointer text-primary font-medium">
-          <ExternalLink className="h-4 w-4 mr-2" />
-          View Deal
-        </Link>
-      </DropdownMenuItem>
-    )}
-  </DropdownMenuContent>
-</DropdownMenu>
-
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="hover:bg-muted">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to={`/user/marketplace/${bid.listingId}`} className="cursor-pointer">
+                  <Eye className="h-4 w-4 mr-2" /> View Listing
+                </Link>
+              </DropdownMenuItem>
+              {bid.status === "accepted" && bid.dealId && (
+                <DropdownMenuItem asChild>
+                  <Link to={`/user/deals/${bid.dealId}`} className="cursor-pointer text-primary font-medium">
+                    <ExternalLink className="h-4 w-4 mr-2" /> View Deal
+                  </Link>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </CardContent>

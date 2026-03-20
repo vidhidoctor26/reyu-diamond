@@ -39,7 +39,7 @@ export const ENDPOINTS = {
   },
 
   AUCTIONS: {
-    LIST: "/auctions",        
+    LIST: "/auctions",
     CREATE: "/auctions",
     GET_ONE: (id: string) => `/auctions/${id}`,
     UPDATE: (id: string) => `/auctions/${id}`,
@@ -52,4 +52,24 @@ export const ENDPOINTS = {
     PLACE_BID: (id: string) => `/auctions/${id}/bid`,
     BID_HISTORY: (id: string) => `/auctions/${id}/bids`,
   },
+  BIDS: {
+    CREATE: "/bids", // POST
+    UPDATE_STATUS: (bidId: string) => `/bids/${bidId}/status`, // PATCH
+    GET_ALL_MY_BIDS: "/bids/my",
+    GET_BIDS_RECEIVED: "/bids/received",
+    GET_BY_AUCTION: (auctionId: string) => `/bids/auction/${auctionId}`, // seller/admin
+    GET_HIGHEST: (auctionId: string) => `/bids/auction/${auctionId}/highest`, // public
+    GET_MY_BID: (auctionId: string) => `/bids/my/${auctionId}`, // buyer
+  },
+
+  DEALS: {
+    LIST: "/deals",
+    GET_ONE: (id: string) => `/deals/${id}`,
+    SHIP: (id: string) => `/deals/${id}/ship`,
+    DELIVER: (id: string) => `/deals/${id}/deliver`,
+    CANCEL: (id: string) => `/deals/${id}/cancel`,
+    DISPUTE: (id: string) => `/deals/${id}/dispute`,
+    GENERATE_PDF: (id: string) => `/deals/${id}/pdf`,
+  },
+
 };

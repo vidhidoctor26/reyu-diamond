@@ -23,6 +23,8 @@ const corsOptions: CorsOptions = {
   credentials: true
 };
 
+app.use(cors(corsOptions));
+
 // Stripe webhook (raw body)
 app.use(
   "/webhook",
@@ -39,7 +41,6 @@ app.use(helmet());
 app.use(apiLimiter);
 
 // CORS middleware
-app.use(cors(corsOptions));
 
 
 // File size error handling

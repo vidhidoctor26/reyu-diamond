@@ -251,13 +251,13 @@ function* logoutWorker(): Generator {
   try {
     // Clear token from storage + axios headers
     setAuthToken(undefined);
- 
+
     // Clear all other slices first
     yield put(clearInventory());
     yield put(auctionActions.fetchAuctionsSuccess([]));
     yield put(auctionActions.fetchMyAuctionsSuccess([]));
     yield put(bidActions.resetBidState());
- 
+
     // Finally reset auth state
     yield put(authActions.logoutSuccess());
   } catch (err) {

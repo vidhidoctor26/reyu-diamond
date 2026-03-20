@@ -39,7 +39,7 @@ export const createAuctionService = async ({
     const sDate = new Date(startDate);
     const eDate = new Date(endDate);
 
-    if (sDate < now) throw new Error("Start date cannot be in the past");
+    if (eDate <= now) throw new Error("End date must be in the future");
     if (eDate <= sDate) throw new Error("End date must be after start date");
 
     const existingAuction = await Auction.findOne({
@@ -60,7 +60,7 @@ export const createAuctionService = async ({
           startDate: sDate,
           endDate: eDate,
           bidIds: [],
-          status: "upcoming",
+          status: sDate <= now ? "active" : "upcoming",
           locked: false,
         },
       ],
@@ -126,7 +126,8 @@ export const updateAuctionService = async (
 
   if (updates.startDate) {
     const sDate = new Date(updates.startDate);
-    if (sDate < new Date()) throw new Error("Start date cannot be in the past");
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    if (sDate < oneMinuteAgo) throw new Error("Start date cannot be in the past");
     auction.startDate = sDate;
   }
 

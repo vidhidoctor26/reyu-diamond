@@ -39,6 +39,8 @@ import MyBids from "@/pages/user/bids/MyBids";
 import BidsOnMyListings from "@/pages/user/bids-received/BidsOnMyListings";
 import BidsReceivedDetail from "@/pages/user/bids-received/components/BidsReceivedDetail";
 import MarketplaceDetailPage from "@/pages/user/marketplace/MarketplaceDetailPage";
+import DealsPage from "@/pages/user/deal/DealsPage";
+import DealDetailPage from "@/pages/user/deal/DealDetailPage";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -143,7 +145,7 @@ const AppRoutes = () => {
         <Route path="inventory/add" element={<InventoryForm />} />
         <Route path="inventory/edit/:id" element={<InventoryForm />} />
         <Route path="inventory/view/:id" element={<InventoryDetails />} />
-  
+
         <Route path="listings" element={<MyListings />} />
         <Route path="listings/create" element={<CreateListing />} />
         <Route path="bids" element={<MyBids />} />
@@ -152,7 +154,9 @@ const AppRoutes = () => {
           path="bids/received/:listingId"
           element={<BidsReceivedDetail />}
         />
-        
+        <Route path="deals" element={<DealsPage />} />
+        <Route path="deals/:dealId" element={<DealDetailPage />} />
+
       </Route>
 
       {/* ---------- FALLBACK ---------- */}

@@ -32,7 +32,7 @@ export interface FilterState {
 }
 
 export const defaultFilters: FilterState = {
-  priceRange: [0, 1000000],
+  priceRange: [0, 100000000],
   caratRange: [0, 10],
   selectedShapes: [],
   selectedColors: [],
@@ -162,7 +162,7 @@ const MarketplaceControls = ({
                 <Slider
   value={pending.priceRange}
   onValueChange={(v) => setPending((p) => ({ ...p, priceRange: v as [number, number] }))}
-  min={0} max={1000000} step={5000}  // ← was 100000
+  min={0} max={1000000} step={100000} // ← was 100000
 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>${pending.priceRange[0].toLocaleString()}</span>

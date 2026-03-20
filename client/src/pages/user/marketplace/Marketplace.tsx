@@ -15,6 +15,7 @@ const Marketplace = () => {
   const { auctions, loading } = useAppSelector((state) => state.auction);
   console.log("auctions:", auctions, "loading:", loading);
 
+
   const [viewMode, setViewMode]             = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery]       = useState("");
   const [sortBy, setSortBy]                 = useState("newest");
@@ -26,13 +27,14 @@ const Marketplace = () => {
   }, [dispatch]);
 
   /* ── Transform raw auctions ── */
-  const allListings = useMemo(
-    () => auctions.map(auctionToMarketplace),
-    [auctions]
-  );
-  console.log("allListings:", allListings);
+ 
 
-
+const allListings = useMemo(
+  () => auctions
+    .filter((a) => a.status === "active" || a.status === "upcoming")
+    .map(auctionToMarketplace),
+  [auctions]
+); 
   /* ── Client-side filter + sort ── */
   const listings = useMemo(() => {
     let result = allListings.filter((l) => {

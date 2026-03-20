@@ -79,12 +79,13 @@ export const deleteInventoryItem = async (
 /* ================= GET ================= */
 
 export const getInventory = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const inventory = await InventoryService.getInventory();
+    const sellerId = req.user!._id.toString();
+    const inventory = await InventoryService.getInventory(sellerId);
     return sendResponse(res, 200, true, "Inventory fetched", inventory);
   } catch (error) {
     next(error);

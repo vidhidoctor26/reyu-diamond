@@ -211,6 +211,8 @@ const { selectedAuction, loading, error } = useAppSelector((s) => s.auction);
 const { highestBid } = useAppSelector((s) => s.bid);
 const { kycStatus } = useAppSelector((s) => s.auth);        // ← add this
 const isKycApproved = kycStatus === "APPROVED"; 
+  const { user } = useAppSelector((s) => s.auth);
+const isOwnListing = (selectedAuction?.sellerId as any)?._id === user?._id;
 
   useEffect(() => {
     if (!id) return;
@@ -393,14 +395,22 @@ const isKycApproved = kycStatus === "APPROVED";
             {/* CTA */}
 <div className="flex gap-3 mt-auto pt-2">
   <div className="flex-1 space-y-1">
-    <Button
-      className="btn-premium text-primary-foreground w-full h-12 text-base"
-      onClick={() => setShowBidModal(true)}
-      disabled={isEnded || !isKycApproved}
-    >
-      <Gavel className="h-5 w-5 mr-2" />
-      {isEnded ? "Auction Ended" : "Place Bid"}
-    </Button>
+   <Button
+  className="btn-premium text-primary-foreground w-full h-12 text-base"
+  onClick={() => !isOwnListing && setShowBidModal(true)}
+  disabled={isEnded || isOwnListing || !isKycApproved}
+>
+  <Gavel className="h-5 w-5 mr-2" />
+  {isEnded ? "Auction Ended" : isOwnListing ? "Your Listing" : "Place Bid"}
+</Button>
+{!isKycApproved && !isEnded && !isOwnListing && (
+  <p className="text-xs text-center text-muted-foreground">
+    <a href="/kyc/start" className="underline underline-offset-2 hover:text-primary transition-colors">
+      Complete KYC verification
+    </a>{" "}
+    to place bids.
+  </p>
+)}
     {!isKycApproved && !isEnded && (
       <p className="text-xs text-center text-muted-foreground">
         <a href="/kyc/start" className="underline underline-offset-2 hover:text-primary transition-colors">

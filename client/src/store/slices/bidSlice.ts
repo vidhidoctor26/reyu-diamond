@@ -93,7 +93,7 @@ const bidSlice = createSlice({
     fetchAuctionBidsRequest(state, _action: PayloadAction<string>) {
       state.loading = true;
     },
-    
+
     fetchAuctionBidsSuccess(state, action: PayloadAction<Bid[]>) {
       state.loading = false;
       state.auctionBids = action.payload;
@@ -102,6 +102,40 @@ const bidSlice = createSlice({
     fetchAuctionBidsFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
+    },
+
+    fetchAllMyBidsRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+
+    fetchAllMyBidsSuccess(state, action: PayloadAction<Bid[]>) {
+      state.loading = false;
+      state.myBids = action.payload;
+    },
+
+    fetchAllMyBidsFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    fetchBidsReceivedRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+
+    fetchBidsReceivedSuccess(state, action: PayloadAction<Bid[]>) {
+      state.loading = false;
+      state.auctionBids = action.payload;
+    },
+    
+    fetchBidsReceivedFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    resetBidState() {
+      return initialState;
     },
 
     clearBidError(state) { state.error = null; },

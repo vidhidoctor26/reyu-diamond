@@ -70,10 +70,12 @@ const auctionSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+
     fetchAuctionsSuccess(state, action: PayloadAction<Auction[]>) {
       state.loading = false;
       state.auctions = action.payload;
     },
+
     fetchAuctionsFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
@@ -93,18 +95,21 @@ const auctionSlice = createSlice({
       state.myLoading = false;
       state.error = action.payload;
     },
-    
+
     fetchAuctionByIdRequest(state, _action: PayloadAction<string>) {
       state.loading = true;
     },
+
     fetchAuctionByIdSuccess(state, action: PayloadAction<Auction>) {
       state.loading = false;
       state.selectedAuction = action.payload;
     },
+
     fetchAuctionByIdFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
     },
+
     createAuctionRequest(
       state,
       _action: PayloadAction<{
@@ -119,6 +124,7 @@ const auctionSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+
     createAuctionSuccess(state, action: PayloadAction<Auction>) {
       state.loading = false;
       const exists = state.auctions.find((a) => a._id === action.payload._id);
@@ -126,10 +132,52 @@ const auctionSlice = createSlice({
         state.auctions.unshift(action.payload);
       }
     },
+
     createAuctionFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
     },
+
+    updateAuctionRequest(state, _action: PayloadAction<{
+      auctionId: string;
+      updates: { basePrice?: number; startDate?: string; endDate?: string };
+      onSuccess?: () => void;
+      onError?: (msg: string) => void;
+    }>) {
+      state.loading = true;
+    },
+
+    updateAuctionSuccess(state, action: PayloadAction<Auction>) {
+      state.loading = false;
+      const idx = state.myAuctions.findIndex((a) => a._id === action.payload._id);
+      if (idx >= 0) state.myAuctions[idx] = action.payload;
+    },
+
+    updateAuctionFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    deleteAuctionRequest(state, _action: PayloadAction<{
+      auctionId: string;
+      onSuccess?: () => void;
+      onError?: (msg: string) => void;
+    }>) {
+      state.loading = true;
+    },
+
+    deleteAuctionSuccess(state, action: PayloadAction<string>) {
+      state.loading = false;
+      // Remove from both lists
+      state.myAuctions = state.myAuctions.filter((a) => a._id !== action.payload);
+      state.auctions = state.auctions.filter((a) => a._id !== action.payload);
+    },
+
+    deleteAuctionFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
     clearAuctionError(state) {
       state.error = null;
     },

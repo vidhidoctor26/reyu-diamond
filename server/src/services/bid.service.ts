@@ -25,20 +25,33 @@ export const createBidService = async ({
     session.startTransaction();
 
     try {
-      const auction = await Auction.findById(auctionId).session(session);
-      if (!auction) throw new Error("Auction not found");
+    // AFTER
+const auction = await Auction.findById(auctionId).session(session);
+if (!auction) throw new Error("Auction not found");
 
-      if (auction.status !== "active")
-        throw new Error("Auction is not active");
+// 1. Ownership check first
+if (auction.sellerId.toString() === buyerId)
+  throw new Error("You cannot bid on your own auction");
 
-      const now = new Date();
-      if (now < new Date(auction.startDate))
-        throw new Error("Auction not started");
-      if (now > new Date(auction.endDate))
-        throw new Error("Auction has ended");
+// 2. Auto-activate if upcoming and within date range
+const now = new Date();
+if (
+  auction.status === "upcoming" &&
+  now >= auction.startDate &&
+  now <= auction.endDate
+) {
+  auction.status = "active";
+  await auction.save({ session });
+}
 
-      if (auction.sellerId.toString() === buyerId)
-        throw new Error("You cannot bid on your own auction");
+// 3. Status check after auto-activation
+if (auction.status !== "active")
+  throw new Error("Auction is not active");
+
+if (now < auction.startDate)
+  throw new Error("Auction has not started yet");
+if (now > auction.endDate)
+  throw new Error("Auction has ended");
 
       if (auction.highestBidderId?.toString() === buyerId)
         throw new Error("You already have the highest bid");
@@ -276,4 +289,40 @@ export const getMyBidService = async (auctionId: string, buyerId: string) => {
   return Bid.find({ auctionId, buyerId })
     .sort({ createdAt: -1 });
 };
-  
+
+export const getMyAllBidsService = async (buyerId: string) => {
+  return Bid.find({ buyerId })
+    .populate({
+      path: "auctionId",
+      populate: [
+        {
+          path: "inventoryId",
+          select: "title shape carat color clarity cut images price",
+        },
+        {
+          path: "sellerId",
+          select: "name email",
+        },
+      ],
+    })
+    .sort({ createdAt: -1 });
+};
+
+export const getBidsOnMyListingsService = async (sellerId: string) => {
+  const auctions = await Auction.find({ 
+    sellerId: new mongoose.Types.ObjectId(sellerId)  // ← explicit ObjectId cast
+  }).select("_id");
+
+  const auctionIds = auctions.map((a) => a._id);
+
+  return Bid.find({ auctionId: { $in: auctionIds } })
+    .populate({
+      path: "auctionId",
+      populate: {
+        path: "inventoryId",
+        select: "shape carat color clarity cut images price",
+      },
+    })
+    .populate("buyerId", "name email")
+    .sort({ createdAt: -1 });
+};

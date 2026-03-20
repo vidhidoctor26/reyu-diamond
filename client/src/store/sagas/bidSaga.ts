@@ -5,6 +5,8 @@ import {
   getMyBidAPI,
   getHighestBidAPI,
   getBidsByAuctionAPI,
+  getAllMyBidsAPI,
+  getBidsReceivedAPI,
 } from "@/services/bid.service";
 
 function* placeBidSaga(action: any): any {
@@ -55,9 +57,36 @@ function* fetchAuctionBidsSaga(action: any): any {
   }
 }
 
+function* fetchAllMyBidsSaga(): any {
+  try {
+    const response = yield call(getAllMyBidsAPI);
+    yield put(bidActions.fetchAllMyBidsSuccess(response.data.data));
+  } catch (error: any) {
+    yield put(bidActions.fetchAllMyBidsFailure(
+      error?.response?.data?.message || error.message
+    ));
+  }
+}
+
+function* fetchBidsReceivedSaga(): any {
+  try {
+    const response = yield call(getBidsReceivedAPI);
+    yield put(bidActions.fetchBidsReceivedSuccess(response.data.data));
+  } catch (error: any) {
+    yield put(bidActions.fetchBidsReceivedFailure(
+      error?.response?.data?.message || error.message
+    ));
+  }
+}
+
+// Add to watcher
+
+
 export default function* bidSaga() {
   yield takeLatest(bidActions.placeBidRequest.type,         placeBidSaga);
   yield takeLatest(bidActions.fetchMyBidRequest.type,       fetchMyBidSaga);
   yield takeLatest(bidActions.fetchHighestBidRequest.type,  fetchHighestBidSaga);
   yield takeLatest(bidActions.fetchAuctionBidsRequest.type, fetchAuctionBidsSaga);
+  yield takeLatest(bidActions.fetchAllMyBidsRequest.type, fetchAllMyBidsSaga);
+  yield takeLatest(bidActions.fetchBidsReceivedRequest.type, fetchBidsReceivedSaga);
 }
