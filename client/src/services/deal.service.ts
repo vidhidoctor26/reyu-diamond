@@ -24,3 +24,9 @@ export const raiseDisputeAPI = (id: string, data: { reason: string }) =>
 
 export const generatePdfAPI = (id: string) =>
   api.post(ENDPOINTS.DEALS.GENERATE_PDF(id));
+
+export const createPaymentIntentAPI = (dealId: string) =>
+  api.post(ENDPOINTS.ESCROW.CREATE_PAYMENT, { dealId });
+
+export const releaseEscrowAPI = (dealId: string) =>
+  api.post(ENDPOINTS.ESCROW.RELEASE(dealId));

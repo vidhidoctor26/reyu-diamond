@@ -31,7 +31,6 @@ import Marketplace from "@/pages/user/marketplace/Marketplace";
 import UserPreferences from "@/pages/user/preferences/UserPreferences";
 import PreferenceForm from "@/pages/user/preferences/PreferenceForm";
 import MyInventory from "@/pages/user/inventory/MyInventory";
-import AddInventory from "@/pages/user/inventory/InventoryForm";
 import InventoryDetails from "@/pages/user/inventory/InventoryDetails";
 import MyListings from "@/pages/user/listings/MyListings";
 import CreateListing from "@/pages/user/listings/CreateListing";
@@ -41,6 +40,7 @@ import BidsReceivedDetail from "@/pages/user/bids-received/components/BidsReceiv
 import MarketplaceDetailPage from "@/pages/user/marketplace/MarketplaceDetailPage";
 import DealsPage from "@/pages/user/deal/DealsPage";
 import DealDetailPage from "@/pages/user/deal/DealDetailPage";
+import PaymentsPage from "@/pages/user/payments/PaymentsPage";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -156,6 +156,7 @@ const AppRoutes = () => {
         />
         <Route path="deals" element={<DealsPage />} />
         <Route path="deals/:dealId" element={<DealDetailPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
 
       </Route>
 

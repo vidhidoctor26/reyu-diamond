@@ -72,4 +72,9 @@ export const ENDPOINTS = {
     GENERATE_PDF: (id: string) => `/deals/${id}/pdf`,
   },
 
+  ESCROW: {
+  CREATE_PAYMENT: "/escrow/create-payment",
+  RELEASE: (dealId: string) => `/escrow/${dealId}/release`,
+},
+
 };

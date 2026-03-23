@@ -41,6 +41,7 @@ const DealActionPanel = ({
     const [disputeReason, setDisputeReason] = useState("");
 
     const renderContent = () => {
+        // ── Terminal states ──────────────────────────────────────
         if (status === "CANCELLED") return (
             <div className="flex items-center gap-2 text-muted-foreground">
                 <Ban className="h-5 w-5" />
@@ -66,12 +67,13 @@ const DealActionPanel = ({
                     ? <Loader2 className="h-4 w-4 animate-spin" />
                     : <Download className="h-4 w-4" />
                 }
-                Download PDF
+                Download Invoice
             </Button>
         );
 
+        // ── Buyer actions ────────────────────────────────────────
         if (userRole === "buyer") {
-            if (status === "CREATED") return (
+            if (status === "CREATED" || status === "PAYMENT_FAILED") return (
                 <Button onClick={onPayment} disabled={actionLoading} className="w-full gap-2">
                     {actionLoading
                         ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -80,29 +82,82 @@ const DealActionPanel = ({
                     Proceed to Payment
                 </Button>
             );
+
+            if (status === "PAYMENT_PENDING" || status === "IN_ESCROW") return (
+                <p className="text-sm text-muted-foreground">
+                    Payment received. Waiting for seller to ship.
+                </p>
+            );
+
+            // SHIPPED → buyer confirms delivery (releases escrow)
             if (status === "SHIPPED") return (
-                <Button onClick={() => setConfirmDelivery(true)} disabled={actionLoading} className="w-full gap-2">
-                    <CheckCircle2 className="h-4 w-4" /> Confirm Delivery
-                </Button>
+                <div className="space-y-2">
+                    <Button
+                        onClick={() => setConfirmDelivery(true)}
+                        disabled={actionLoading}
+                        className="w-full gap-2"
+                    >
+                        {actionLoading
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <CheckCircle2 className="h-4 w-4" />
+                        }
+                        Confirm Delivery
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setDisputeModal(true)}
+                        disabled={actionLoading}
+                        className="w-full gap-2 text-destructive hover:text-destructive"
+                    >
+                        <AlertTriangle className="h-4 w-4" /> Raise Dispute
+                    </Button>
+                </div>
             );
+
+            // DELIVERED → confirm to release escrow OR dispute
             if (status === "DELIVERED") return (
-                <Button variant="destructive" onClick={() => setDisputeModal(true)} disabled={actionLoading} className="w-full gap-2">
-                    <AlertTriangle className="h-4 w-4" /> Raise Dispute
-                </Button>
+                <div className="space-y-2">
+                    <Button
+                        onClick={() => setConfirmDelivery(true)}
+                        disabled={actionLoading}
+                        className="w-full gap-2"
+                    >
+                        {actionLoading
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <CheckCircle2 className="h-4 w-4" />
+                        }
+                        Confirm Delivery
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={() => setDisputeModal(true)}
+                        disabled={actionLoading}
+                        className="w-full gap-2"
+                    >
+                        <AlertTriangle className="h-4 w-4" /> Raise Dispute
+                    </Button>
+                </div>
             );
+
             return <p className="text-sm text-muted-foreground">Waiting for seller action.</p>;
         }
 
-        // Seller
+        // ── Seller actions ───────────────────────────────────────
         if (status === "CREATED" || status === "PAYMENT_PENDING") return (
             <p className="text-sm text-muted-foreground">Waiting for buyer payment.</p>
         );
+
         if (status === "IN_ESCROW") return (
             <Button onClick={() => setShipModal(true)} disabled={actionLoading} className="w-full gap-2">
-                <Truck className="h-4 w-4" /> Mark as Shipped
+                {actionLoading
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Truck className="h-4 w-4" />
+                }
+                Mark as Shipped
             </Button>
         );
-        if (status === "DELIVERED") return (
+
+        if (status === "SHIPPED" || status === "DELIVERED") return (
             <p className="text-sm text-muted-foreground">Awaiting buyer confirmation.</p>
         );
 
@@ -132,14 +187,20 @@ const DealActionPanel = ({
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Delivery</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Please confirm you have received the diamond. This will release payment to the seller.
+                            Please confirm you have received the diamond. This will
+                            release the escrowed payment to the seller.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => { setConfirmDelivery(false); onConfirmDelivery(); }}>
+                        <AlertDialogAction
+                            onClick={() => {
+                                setConfirmDelivery(false);
+                                onConfirmDelivery();
+                            }}
+                        >
                             {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                            Confirm
+                            Confirm & Release Payment
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -165,8 +226,12 @@ const DealActionPanel = ({
                         <Button variant="outline" onClick={() => setDisputeModal(false)}>Cancel</Button>
                         <Button
                             variant="destructive"
-                            onClick={() => { setDisputeModal(false); onRaiseDispute(disputeReason); }}
-                            disabled={actionLoading || !disputeReason}
+                            onClick={() => {
+                                setDisputeModal(false);
+                                onRaiseDispute(disputeReason);
+                                setDisputeReason("");
+                            }}
+                            disabled={actionLoading || !disputeReason.trim()}
                         >
                             {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                             Submit Dispute

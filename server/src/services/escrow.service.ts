@@ -45,8 +45,8 @@ export const createPaymentIntentForDealService = async (
     payment_method_types: ["card"],
     transfer_group: `deal_${dealId}`,
     metadata: {
-      dealId,
-      buyerId,
+      dealId: dealId.toString(),           
+      buyerId: buyerId.toString(),          
       sellerId: deal.sellerId.toString(),
     },
   });

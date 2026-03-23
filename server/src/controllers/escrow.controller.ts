@@ -24,12 +24,12 @@ export const releaseEscrow = async (
 ) => {
   try {
     const dealId = req.params.dealId;
-    const { note } = req.body;
+    const note = req.body?.note; 
 
     const result = await releaseEscrowService(
       dealId,
       req.user._id.toString(),
-      req.userRole,
+      req.user.role,     
       note
     );
 

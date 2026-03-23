@@ -56,6 +56,8 @@ interface DealState {
   loading: boolean;
   actionLoading: boolean;
   pdfLoading: boolean;
+  paymentLoading: boolean;
+  clientSecret: string | null;
   error: string | null;
 }
 
@@ -65,6 +67,8 @@ const initialState: DealState = {
   loading: false,
   actionLoading: false,
   pdfLoading: false,
+  paymentLoading: false,
+  clientSecret: null,
   error: null,
 };
 
@@ -190,15 +194,57 @@ const dealSlice = createSlice({
     }>) {
       state.pdfLoading = true;
     },
+
     generatePdfSuccess(state, action: PayloadAction<{ pdfUrl: string; dealId: string }>) {
       state.pdfLoading = false;
       if (state.selectedDeal?._id === action.payload.dealId) {
         state.selectedDeal.pdfPath = action.payload.pdfUrl;
       }
     },
+
     generatePdfFailure(state, action: PayloadAction<string>) {
       state.pdfLoading = false;
       state.error = action.payload;
+    },
+
+    //payment intent
+    createPaymentIntentRequest(state, _action: PayloadAction<{
+      dealId: string;
+      onSuccess?: (clientSecret: string) => void;
+      onError?: (msg: string) => void;
+    }>) {
+      state.paymentLoading = true;
+    },
+
+    createPaymentIntentSuccess(state, action: PayloadAction<{ clientSecret: string; dealId: string }>) {
+      state.paymentLoading = false;
+      state.clientSecret = action.payload.clientSecret;
+      if (state.selectedDeal?._id === action.payload.dealId) {
+        state.selectedDeal.status = "PAYMENT_PENDING";
+      }
+    },
+
+    createPaymentIntentFailure(state, action: PayloadAction<string>) {
+      state.paymentLoading = false;
+      state.error = action.payload;
+    },
+
+    releaseEscrowRequest(state, _action: PayloadAction<{
+  dealId: string;
+  onSuccess?: () => void;
+  onError?: (msg: string) => void;
+}>) { state.actionLoading = true; },
+releaseEscrowSuccess(state, action: PayloadAction<any>) {
+  state.actionLoading = false;
+  if (action.payload?.deal) state.selectedDeal = action.payload.deal;
+},
+releaseEscrowFailure(state, action: PayloadAction<string>) {
+  state.actionLoading = false;
+  state.error = action.payload;
+},
+
+    clearClientSecret(state) {
+      state.clientSecret = null;
     },
 
     clearSelectedDeal(state) {

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -8,22 +8,61 @@ import { Button } from "@/components/ui/button";
 import DealSummary from "./components/DealSummary";
 import DealTimeline from "./components/DealTimeline";
 import DealActionPanel from "./components/DealActionPanel";
+import StripePaymentModal from "./components/StripePaymentModal";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { dealActions } from "@/store/slices/dealSlice";
+
+const POLL_INTERVAL = 3000;
+const POLL_MAX = 10;
 
 const DealDetailPage = () => {
     const { dealId } = useParams();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const { selectedDeal, loading, actionLoading, pdfLoading } = useAppSelector((s) => s.deal);
+    const { selectedDeal, loading, actionLoading, pdfLoading, paymentLoading, clientSecret } =
+        useAppSelector((s) => s.deal);
     const { user } = useAppSelector((s) => s.auth);
+
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollCount = useRef(0);
 
     useEffect(() => {
         if (!dealId) return;
         dispatch(dealActions.fetchDealByIdRequest(dealId));
-        return () => { dispatch(dealActions.clearSelectedDeal()); };
+        return () => {
+            dispatch(dealActions.clearSelectedDeal());
+            dispatch(dealActions.clearClientSecret());
+            stopPolling();
+        };
     }, [dealId, dispatch]);
+
+    // Stop polling once deal reaches IN_ESCROW
+    useEffect(() => {
+        if (selectedDeal?.status === "IN_ESCROW" && pollRef.current) {
+            stopPolling();
+            toast.success("Payment confirmed! Funds are held in escrow.");
+        }
+    }, [selectedDeal?.status]);
+
+    const stopPolling = () => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+            pollCount.current = 0;
+        }
+    };
+
+    const startPolling = (id: string) => {
+        stopPolling();
+        pollCount.current = 0;
+        pollRef.current = setInterval(() => {
+            pollCount.current += 1;
+            dispatch(dealActions.fetchDealByIdRequest(id));
+            if (pollCount.current >= POLL_MAX) stopPolling();
+        }, POLL_INTERVAL);
+    };
 
     if (loading || !selectedDeal) {
         return (
@@ -37,7 +76,6 @@ const DealDetailPage = () => {
 
     const inv = selectedDeal.inventoryId as any;
     const buyerId = (selectedDeal.buyerId as any)?._id || selectedDeal.buyerId;
-    const sellerId = (selectedDeal.sellerId as any)?._id || selectedDeal.sellerId;
     const userRole: "buyer" | "seller" = buyerId === user?._id ? "buyer" : "seller";
 
     const diamond = {
@@ -58,12 +96,22 @@ const DealDetailPage = () => {
         }));
     };
 
+    // SHIPPED → DELIVERED uses confirmDeliveredRequest
+    // DELIVERED → COMPLETED uses releaseEscrowRequest (releases funds to seller)
     const handleConfirmDelivery = () => {
-        dispatch(dealActions.confirmDeliveredRequest({
-            dealId: selectedDeal._id,
-            onSuccess: () => toast.success("Delivery confirmed"),
-            onError: (msg) => toast.error(msg),
-        }));
+        if (selectedDeal.status === "DELIVERED") {
+            dispatch(dealActions.releaseEscrowRequest({
+                dealId: selectedDeal._id,
+                onSuccess: () => toast.success("Payment released to seller! Deal completed."),
+                onError: (msg) => toast.error(msg),
+            }));
+        } else {
+            dispatch(dealActions.confirmDeliveredRequest({
+                dealId: selectedDeal._id,
+                onSuccess: () => toast.success("Delivery confirmed"),
+                onError: (msg) => toast.error(msg),
+            }));
+        }
     };
 
     const handleRaiseDispute = (reason: string) => {
@@ -76,8 +124,17 @@ const DealDetailPage = () => {
     };
 
     const handlePayment = () => {
-        // Wire to payment gateway when ready
-        toast.info("Payment gateway coming soon");
+        dispatch(dealActions.createPaymentIntentRequest({
+            dealId: selectedDeal._id,
+            onSuccess: () => setPaymentModalOpen(true),
+            onError: (msg) => toast.error(msg),
+        }));
+    };
+
+    const handlePaymentSuccess = () => {
+        setPaymentModalOpen(false);
+        dispatch(dealActions.clearClientSecret());
+        startPolling(selectedDeal._id);
     };
 
     const handleDownloadPdf = () => {
@@ -132,7 +189,7 @@ const DealDetailPage = () => {
                         <DealActionPanel
                             status={selectedDeal.status}
                             userRole={userRole}
-                            actionLoading={actionLoading}
+                            actionLoading={actionLoading || paymentLoading}
                             onMarkShipped={handleMarkShipped}
                             onConfirmDelivery={handleConfirmDelivery}
                             onRaiseDispute={handleRaiseDispute}
@@ -143,6 +200,21 @@ const DealDetailPage = () => {
                     </motion.div>
                 </div>
             </div>
+
+            {clientSecret && (
+                <StripePaymentModal
+                    open={paymentModalOpen}
+                    onOpenChange={(v) => {
+                        setPaymentModalOpen(v);
+                        if (!v) dispatch(dealActions.clearClientSecret());
+                    }}
+                    clientSecret={clientSecret}
+                    amount={selectedDeal.dealAmount}
+                    dealId={selectedDeal._id}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(msg) => toast.error(msg)}
+                />
+            )}
         </DashboardShell>
     );
 };

@@ -5,6 +5,8 @@ import Escrow from "../models/Escrow.model";
 import { Deal } from "../models/Deal.model";
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
+   console.log("🔔 Webhook received:", req.headers["stripe-signature"] ? "has signature" : "NO SIGNATURE");
+  console.log("🔔 Body type:", typeof req.body, Buffer.isBuffer(req.body) ? "is buffer" : "not buffer");
   const sig = req.headers["stripe-signature"];
 
   let event: Stripe.Event;

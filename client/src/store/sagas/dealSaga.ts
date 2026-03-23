@@ -8,6 +8,8 @@ import {
     cancelDealAPI,
     raiseDisputeAPI,
     generatePdfAPI,
+    createPaymentIntentAPI,
+    releaseEscrowAPI,
 } from "@/services/deal.service";
 
 function* fetchDealsSaga(): any {
@@ -98,6 +100,34 @@ function* generatePdfSaga(action: any): any {
     }
 }
 
+function* createPaymentIntentSaga(action: any): any {
+  try {
+    const { dealId, onSuccess, onError } = action.payload;
+    const response = yield call(createPaymentIntentAPI, dealId);
+    const { clientSecret } = response.data.data;
+    yield put(dealActions.createPaymentIntentSuccess({ clientSecret, dealId }));
+    if (onSuccess) onSuccess(clientSecret);
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || error.message;
+    yield put(dealActions.createPaymentIntentFailure(msg));
+    if (action.payload.onError) action.payload.onError(msg);
+  }
+}
+
+function* releaseEscrowSaga(action: any): any {
+  try {
+    const { dealId, onSuccess, onError } = action.payload;
+    const response = yield call(releaseEscrowAPI, dealId);
+    yield put(dealActions.releaseEscrowSuccess(response.data.data));
+    if (onSuccess) onSuccess();
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || error.message;
+    yield put(dealActions.releaseEscrowFailure(msg));
+    if (action.payload.onError) action.payload.onError(msg);
+  }
+}
+
+
 export default function* dealSaga() {
     yield takeLatest(dealActions.fetchDealsRequest.type, fetchDealsSaga);
     yield takeLatest(dealActions.fetchDealByIdRequest.type, fetchDealByIdSaga);
@@ -106,4 +136,6 @@ export default function* dealSaga() {
     yield takeLatest(dealActions.cancelDealRequest.type, cancelDealSaga);
     yield takeLatest(dealActions.raiseDisputeRequest.type, raiseDisputeSaga);
     yield takeLatest(dealActions.generatePdfRequest.type, generatePdfSaga);
+    yield takeLatest(dealActions.createPaymentIntentRequest.type, createPaymentIntentSaga);
+    yield takeLatest(dealActions.releaseEscrowRequest.type, releaseEscrowSaga);
 }
