@@ -3,4 +3,6 @@ secrets/
 dist/
 node_modules/
 seeder/
+logs/
+
 package-lock.json

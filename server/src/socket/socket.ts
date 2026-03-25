@@ -2,20 +2,26 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import * as ChatService from "../services/chat.service";
 
 import Conversation from "../models/Chat.conversation.model";
 import Message from "../models/Chat.message.model";
-import { CustomError } from "../utils/customError.utility";
+import { CustomError } from "../utils";
+import logger from "../utils/logger";
 
 dotenv.config();
 
+let ioInstance: Server | null = null;
+
 export const setupSocket = (io: Server) => {
+  ioInstance = io;
   // JWT Middleware
   io.use((socket: any, next) => {
     try {
       const token = socket.handshake.auth?.token;
       if (!token) return next(new CustomError("Unauthorized : Token Missing", 401));
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+
       socket.user = decoded;
       next();
     } catch (error) {
@@ -25,15 +31,13 @@ export const setupSocket = (io: Server) => {
 
   io.on("connection", (socket: any) => {
     const userId = socket.user?.id || socket.user?._id;
-    console.log("User Connected:", userId);
+
+    logger.info("Socket user connected", { userId });
 
     // Join personal room (for direct notifications)
     socket.join(userId.toString());
 
-    /**
-     * JOIN CONVERSATION ROOM
-     */
-    socket.on("joinConversation", async (conversationId: string) => {
+    socket.on("joinconversation", async (conversationId: string) => {
       try {
         if (!conversationId || !mongoose.Types.ObjectId.isValid(conversationId)) {
           throw new CustomError("Invalid conversationId", 400);
@@ -48,7 +52,8 @@ export const setupSocket = (io: Server) => {
         if (!isParticipant) throw new CustomError("Not allowed to join", 403);
 
         socket.join(conversationId);
-        console.log(`User ${userId} joined conversation ${conversationId}`);
+
+        logger.info("User joined conversation", { userId, conversationId });
 
         socket.emit("joinedConversation", { success: true, conversationId });
 
@@ -77,6 +82,7 @@ export const setupSocket = (io: Server) => {
           });
         }
       } catch (error: any) {
+        logger.warn("Join conversation failed", { userId, conversationId, error: error.message });
         socket.emit("socketError", {
           success: false,
           message: error.message || "Join conversation failed",
@@ -84,9 +90,6 @@ export const setupSocket = (io: Server) => {
       }
     });
 
-    /**
-     * TYPING EVENT
-     */
     socket.on("typing", ({ conversationId }: { conversationId: string }) => {
       socket.to(conversationId).emit("typing", { userId, conversationId });
     });
@@ -95,10 +98,6 @@ export const setupSocket = (io: Server) => {
       socket.to(conversationId).emit("stopTyping", { userId, conversationId });
     });
 
-    /**
-     * SEND MESSAGE
-     * ✅ Saves as DELIVERED if receiver is online in the room, else SENT
-     */
     socket.on(
       "sendMessage",
       async ({
@@ -113,72 +112,22 @@ export const setupSocket = (io: Server) => {
         replyToMessageId?: string;
       }) => {
         try {
-          if (!conversationId || !mongoose.Types.ObjectId.isValid(conversationId)) {
-            throw new CustomError("Invalid conversationId", 400);
-          }
-          if (!text || text.trim().length === 0) {
-            throw new CustomError("Message text is required", 400);
-          }
-
-          const conversation: any = await Conversation.findById(conversationId);
-          if (!conversation) throw new CustomError("Conversation not found", 404);
-
-          const isParticipant = conversation.participantIds.some((id: any) =>
-            id.equals(userId)
-          );
-          if (!isParticipant) throw new CustomError("Not allowed", 403);
-
-          // ✅ Check if the receiver is currently in the room (online)
-          const roomSockets = await io.in(conversationId).fetchSockets();
-          const receiverId = conversation.participantIds
-            .find((id: any) => id.toString() !== userId.toString())
-            ?.toString();
-
-          const isReceiverOnline = roomSockets.some(
-            (s: any) =>
-              (s.user?.id || s.user?._id)?.toString() === receiverId
-          );
-
-          // ✅ Set status based on receiver presence
-          const messageStatus = isReceiverOnline ? "DELIVERED" : "SENT";
-
-          const newMessage = await Message.create({
-            conversationId: new mongoose.Types.ObjectId(conversationId),
-            senderId: new mongoose.Types.ObjectId(userId),
+          const newMessage = await ChatService.sendMessageService({
+            conversationId,
+            senderId: userId,
             text,
-            attachments: attachments || [],
-            replyToMessageId: replyToMessageId
-              ? new mongoose.Types.ObjectId(replyToMessageId)
-              : undefined,
-            status: messageStatus,
-            sentAt: new Date(),
-            deliveredAt: isReceiverOnline ? new Date() : undefined,
-            // legacy
-            from: userId,
-            read: false,
+            attachments,
           });
 
-          // Update conversation metadata
-          conversation.lastMessageText = text.substring(0, 100);
-          conversation.lastMessageAt = newMessage.sentAt;
-          conversation.userSettings = conversation.userSettings.map((setting: any) => {
-            if (setting.userId.toString() !== userId.toString()) {
-              setting.unreadCount = (setting.unreadCount || 0) + 1;
-            }
-            return setting;
-          });
-          await conversation.save();
-
-          // ✅ Emit to all users in the conversation room
           io.to(conversationId).emit("newMessage", newMessage);
 
-          // ✅ Send ack to sender with final status
           socket.emit("messageSent", {
             success: true,
             messageId: newMessage._id,
             status: messageStatus,
           });
         } catch (error: any) {
+          logger.error("Socket sendMessage failed", { userId, conversationId, error: error.message });
           socket.emit("socketError", {
             success: false,
             message: error.message || "Message sending failed",
@@ -187,53 +136,15 @@ export const setupSocket = (io: Server) => {
       }
     );
 
-    /**
-     * MARK AS READ
-     * ✅ Updates all unread messages to READ and notifies sender
-     */
     socket.on(
       "markAsRead",
       async ({ conversationId }: { conversationId: string }) => {
         try {
-          if (!conversationId || !mongoose.Types.ObjectId.isValid(conversationId)) {
-            throw new CustomError("Invalid conversationId", 400);
-          }
-
-          const conversation: any = await Conversation.findById(conversationId);
-          if (!conversation) throw new CustomError("Conversation not found", 404);
-
-          const isParticipant = conversation.participantIds.some((id: any) =>
-            id.equals(userId)
-          );
-          if (!isParticipant) throw new CustomError("Not allowed", 403);
-
-          // ✅ Mark all SENT/DELIVERED messages from the other person as READ
-          const result = await Message.updateMany(
-            {
-              conversationId: new mongoose.Types.ObjectId(conversationId),
-              senderId: { $ne: new mongoose.Types.ObjectId(userId) },
-              status: { $in: ["SENT", "DELIVERED"] },
-            },
-            {
-              $set: {
-                status: "READ",
-                readAt: new Date(),
-                read: true, // legacy
-              },
-            }
-          );
-
-          // Reset unreadCount for current user
-          conversation.userSettings = conversation.userSettings.map((setting: any) => {
-            if (setting.userId.toString() === userId.toString()) {
-              setting.unreadCount = 0;
-              setting.lastReadAt = new Date();
-            }
-            return setting;
+          await ChatService.markConversationAsReadService({
+            conversationId,
+            userId,
           });
-          await conversation.save();
 
-          // ✅ Notify everyone in room (sender sees their msgs marked READ)
           io.to(conversationId).emit("messagesRead", {
             conversationId,
             readBy: userId,
@@ -243,6 +154,7 @@ export const setupSocket = (io: Server) => {
 
           socket.emit("readSuccess", { success: true, conversationId });
         } catch (error: any) {
+          logger.error("Socket markAsRead failed", { userId, conversationId, error: error.message });
           socket.emit("socketError", {
             success: false,
             message: error.message || "Mark read failed",
@@ -252,7 +164,9 @@ export const setupSocket = (io: Server) => {
     );
 
     socket.on("disconnect", () => {
-      console.log("User Disconnected:", userId);
+      logger.info("Socket user disconnected", { userId });
     });
   });
 };
+
+export const getIO = () => ioInstance;
