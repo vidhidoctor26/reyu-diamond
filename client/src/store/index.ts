@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
 import rootReducer from "./rootReducer";
 import rootSaga from "./rootSaga";
+import { socketMiddleware } from "./socketMiddleware";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -11,8 +12,8 @@ const store = configureStore({
     getDefaultMiddleware({
       thunk: false,
       serializableCheck: false,
-      
-    }).concat(sagaMiddleware),
+    }).concat(sagaMiddleware)
+      .concat(socketMiddleware)
 });
 
 sagaMiddleware.run(rootSaga);

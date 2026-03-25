@@ -77,4 +77,11 @@ export const ENDPOINTS = {
   RELEASE: (dealId: string) => `/escrow/${dealId}/release`,
 },
 
+ CHAT: {
+  LIST: "/chats",
+  INITIATE: "/chats/initiate",
+  GET_MESSAGES: (conversationId: string) => `/chats/${conversationId}`,
+  MARK_READ: (conversationId: string) => `/chats/${conversationId}`,
+},
+
 };

@@ -41,6 +41,7 @@ import MarketplaceDetailPage from "@/pages/user/marketplace/MarketplaceDetailPag
 import DealsPage from "@/pages/user/deal/DealsPage";
 import DealDetailPage from "@/pages/user/deal/DealDetailPage";
 import PaymentsPage from "@/pages/user/payments/PaymentsPage";
+import MessagesPage from "@/pages/user/chat/MessagesPage";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -157,6 +158,7 @@ const AppRoutes = () => {
         <Route path="deals" element={<DealsPage />} />
         <Route path="deals/:dealId" element={<DealDetailPage />} />
         <Route path="payments" element={<PaymentsPage />} />
+        <Route path="messages" element={<MessagesPage />} />
 
       </Route>
 

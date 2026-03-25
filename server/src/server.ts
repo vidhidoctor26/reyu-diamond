@@ -80,6 +80,9 @@ export const io = new Server(server, {
   },
 });
 
+io.on("connection", (socket) => {
+  console.log("✅ CONNECTED:", socket.id);
+});
 // call your socket setup function
 setupSocket(io);
 

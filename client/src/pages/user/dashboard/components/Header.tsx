@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAppSelector } from "@/hooks/redux";
 
 const Header = () => {
+  const user = useAppSelector((state) => state.auth.user);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -12,7 +15,7 @@ const Header = () => {
     >
       <div>
         <h1 className="text-4xl font-display font-bold text-primary">
-          Welcome back, John
+          Welcome back, {user?.name || "User"}
         </h1>
         <p className="text-muted-foreground mt-1">
           Here's what's happening with your diamonds

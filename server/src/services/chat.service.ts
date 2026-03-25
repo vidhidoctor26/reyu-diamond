@@ -101,6 +101,8 @@ export const sendMessageService = async ({
     sentAt: new Date(),
   });
 
+  
+
   // update conversation last message
   conversation.lastMessageText = text.substring(0, 100);
   conversation.lastMessageAt = message.sentAt;

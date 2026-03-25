@@ -5,6 +5,7 @@ import inventoryReducer from "./slices/inventorySlice";
 import auctionReducer from "./slices/auctionSlice";
 import bidReducer from "./slices/bidSlice";
 import dealReducer from "./slices/dealSlice";
+import chatReducer from "./slices/chatSlice";
 
 
 
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   auction: auctionReducer,
   bid: bidReducer,
   deal: dealReducer,
+  chat: chatReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>; // ✅ REQUIRED

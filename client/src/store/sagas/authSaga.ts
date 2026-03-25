@@ -62,41 +62,36 @@ function* loginWorker(
       password: action.payload.password,
     });
 
-    const { token, user: serverUser } = res.data.data;
+    const { token, user } = res.data.data;
 
+    // ✅ Store token
     setAuthToken(token, action.payload.rememberMe);
+
+    // ✅ Normalize user
+    const normalizedUser = {
+      id: user._id || user.id,
+      _id: user._id || user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
 
     yield put(
       authActions.loginSuccess({
-        user: {
-          id: serverUser._id || serverUser.id,   // ✅ _id first, fallback to id
-          _id: serverUser._id || serverUser.id,  // ✅ same value, both fields set
-          name: serverUser.name,
-          email: serverUser.email,
-          role: serverUser.role,
-        },
+        user: normalizedUser,
         token,
-        accountStatus: serverUser.accountStatus,
-        kycStatus: serverUser.kycStatus,
+        accountStatus: user.accountStatus,
+        kycStatus:
+          user.kycStatus === "not_submitted" ? "NOT_STARTED" : user.kycStatus,
       })
     );
   } catch (err: any) {
     setAuthToken(undefined);
-    const status = err.response?.status;
     const response = err.response?.data;
-
-    if (
-      status === 403 &&
-      response?.message?.toLowerCase().includes("email not verified")
-    ) {
-      yield put(authActions.startFlow("VERIFY_EMAIL"));
-      yield put(authActions.flowFailure("Email not verified. Please verify OTP."));
-      return;
-    }
-
     yield put(authActions.loginFailure(response?.message || "Login failed"));
   }
 }
+
 /* ================= VERIFY OTP ================= */
 
 function* verifyOtpWorker(
@@ -206,6 +201,8 @@ function* resendOtpWorker(action: PayloadAction<{ email: string }>): Generator {
   }
 }
 
+/* ================= HYDRATE SESSION ================= */
+
 function* hydrateSessionWorker(): Generator<any, any, any> {
   try {
     const token =
@@ -216,33 +213,49 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
       return;
     }
 
-    // Set token to axios header
+    // ✅ attach token to axios header
     api.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-    // Fetch user profile
+    // ✅ fetch user profile
     const profileRes = yield call(api.get, "/user/profile");
+    
+    // 🔍 Handle nested user object: { success: true, data: { user: { ... } } }
+    const serverUser = profileRes.data.data.user;
+    
+    if (!serverUser) {
+        throw new Error("User data missing from profile response");
+    }
 
-    // Fetch KYC status
-    const kycRes = yield call(api.get, "/kyc/me");
-
-    const user = profileRes.data.data;
-    const kycStatus =
-      kycRes?.data?.data?.status?.toUpperCase() || "NOT_STARTED";
+    // ✅ fetch kyc status with fallback to isKycVerified flag
+    let kycStatus = serverUser.isKycVerified ? "APPROVED" : "NOT_STARTED";
+    
+    try {
+      const kycRes = yield call(api.get, "/kyc/me");
+      if (kycRes?.data?.data?.status) {
+        kycStatus = kycRes.data.data.status.toUpperCase();
+      }
+    } catch (kycErr: any) {
+      // 404 is expected if KYC hasn't been started
+      if (kycErr.response?.status !== 404) {
+        console.error("KYC fetch error during hydration:", kycErr);
+      }
+    }
 
     yield put(
       authActions.hydrateSessionSuccess({
         user: {
-          id: user._id || user.id,   // ✅
-          _id: user._id || user.id,  // ✅
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          id: serverUser._id || serverUser.id,
+          _id: serverUser._id || serverUser.id,
+          name: serverUser.name,
+          email: serverUser.email,
+          role: serverUser.role,
         },
-        accountStatus: user.accountStatus,
+        accountStatus: serverUser.accountStatus || "ACTIVE",
         kycStatus,
       }),
     );
   } catch (err) {
+    console.error("Hydration failed:", err);
     yield put(authActions.hydrateSessionFailure());
   }
 }

@@ -8,6 +8,7 @@ export const initiateConversationController = async (
   next: NextFunction
 ) => {
   try {
+    console.log("🔥 INIT ROUTE HIT");
     const initiatorId = (req as any).user._id;
 
     const { participantId, contextType, contextId } = req.body;

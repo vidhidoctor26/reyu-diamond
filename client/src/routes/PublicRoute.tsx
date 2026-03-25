@@ -7,7 +7,9 @@ interface PublicRouteProps {
 }
 
 const PublicRoute = ({ children }: PublicRouteProps) => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
+
+  if (loading) return null;
 
   if (isAuthenticated) {
     // 🔥 Do NOT decide destination here

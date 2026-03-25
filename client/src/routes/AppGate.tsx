@@ -30,7 +30,8 @@ const AppGate = ({ children }: AppGateProps) => {
 
   if (!isKycFree) {
     if (kycStatus === "NOT_STARTED") {
-      return <Navigate to="/kyc/start" replace />;
+      // 🛑 Removed forced redirect to allow dashboard access without jumping to KYC
+      // return <Navigate to="/kyc/start" replace />;
     }
 
     if (kycStatus === "REJECTED") {
