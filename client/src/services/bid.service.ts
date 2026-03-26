@@ -18,3 +18,6 @@ export const getAllMyBidsAPI = () =>
 
 export const getBidsReceivedAPI = () =>
   api.get(ENDPOINTS.BIDS.GET_BIDS_RECEIVED);
+
+export const updateBidStatusAPI = (bidId: string, action: string) =>
+  api.patch(`/bids/${bidId}/status`, { action });

@@ -7,6 +7,7 @@ export interface Bid {
   bidAmount: number;
   status: "ACTIVE" | "ACCEPTED" | "REJECTED" | "EXPIRED";
   isHighestBid: boolean;
+  dealId?: string;
   createdAt: string;
 }
 
@@ -128,8 +129,42 @@ const bidSlice = createSlice({
       state.loading = false;
       state.auctionBids = action.payload;
     },
-    
+
     fetchBidsReceivedFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    updateBidRequest(
+      state,
+      _action: PayloadAction<{
+        bidId: string;
+        action: "ACCEPT" | "REJECT" | "EXPIRE";
+        onSuccess?: (data: any) => void;
+        onError?: (msg: string) => void;
+      }>
+    ) {
+      state.loading = true;
+      state.error = null;
+    },
+
+    updateBidSuccess(
+      state,
+      action: PayloadAction<{ bid: Bid; deal?: any }>
+    ) {
+      state.loading = false;
+      state.successMessage = "Bid updated successfully";
+
+      state.auctionBids = state.auctionBids.map((b) =>
+        b._id === action.payload.bid._id
+          ? { ...b, ...action.payload.bid }
+          : action.payload.bid.status === "ACCEPTED"
+            ? { ...b, status: "REJECTED" } // auto reject others
+            : b
+      );
+    },
+
+    updateBidFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
     },

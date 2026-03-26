@@ -184,6 +184,18 @@ const auctionSlice = createSlice({
     clearSelectedAuction(state) {
       state.selectedAuction = null;
     },
+
+    updateAuctionStatus(state, action: PayloadAction<{ auctionId: string, status: Auction['status'], locked?: boolean }>) {
+      if (state.selectedAuction && state.selectedAuction._id === action.payload.auctionId) {
+        state.selectedAuction.status = action.payload.status;
+        if (action.payload.locked !== undefined) state.selectedAuction.locked = action.payload.locked;
+      }
+      const idx = state.myAuctions.findIndex(a => a._id === action.payload.auctionId);
+      if (idx >= 0) {
+        state.myAuctions[idx].status = action.payload.status;
+        if (action.payload.locked !== undefined) state.myAuctions[idx].locked = action.payload.locked;
+      }
+    },
   },
 });
 

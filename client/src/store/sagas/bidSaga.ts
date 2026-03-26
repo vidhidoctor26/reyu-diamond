@@ -7,6 +7,7 @@ import {
   getBidsByAuctionAPI,
   getAllMyBidsAPI,
   getBidsReceivedAPI,
+  updateBidStatusAPI,
 } from "@/services/bid.service";
 
 function* placeBidSaga(action: any): any {
@@ -79,6 +80,32 @@ function* fetchBidsReceivedSaga(): any {
   }
 }
 
+function* updateBidSaga(action: any): any {
+  try {
+    const { bidId, action: bidAction, onSuccess, onError } = action.payload;
+
+    console.log("🚀 UPDATING BID:", { bidId, bidAction });
+
+    const response = yield call(updateBidStatusAPI, bidId, bidAction);
+
+    console.log("✅ UPDATE RESPONSE:", response.data);
+
+    yield put(bidActions.updateBidSuccess(response.data.data));
+
+    if (onSuccess) onSuccess(response.data.data);
+
+  } catch (error: any) {
+    console.log("❌ UPDATE ERROR:", error?.response?.data);
+
+    const message = error?.response?.data?.message || error.message;
+
+    yield put(bidActions.updateBidFailure(message));
+
+    if (onError) onError(message);
+  }
+}
+
+
 // Add to watcher
 
 
@@ -89,4 +116,5 @@ export default function* bidSaga() {
   yield takeLatest(bidActions.fetchAuctionBidsRequest.type, fetchAuctionBidsSaga);
   yield takeLatest(bidActions.fetchAllMyBidsRequest.type, fetchAllMyBidsSaga);
   yield takeLatest(bidActions.fetchBidsReceivedRequest.type, fetchBidsReceivedSaga);
+  yield takeLatest(bidActions.updateBidRequest.type,updateBidSaga);
 }

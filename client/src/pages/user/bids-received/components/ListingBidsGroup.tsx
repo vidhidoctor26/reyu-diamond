@@ -73,6 +73,20 @@ const ListingBidsGroup = ({ listing, ...actions }: any) => {
         </div>
 
         {/* BIDS */}
+        <div className="space-y-3 pt-2">
+          {listing.bids.map((bid: any) => (
+            <BidRow
+              key={bid.id}
+              bid={bid}
+              isHighest={bid.bidAmount === highestBid}
+              listingStatus={listing.inventoryStatus}
+              hasAcceptedBid={listing.bids.some(
+                (b: any) => b.status === "accepted",
+              )}
+              {...actions}
+            />
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

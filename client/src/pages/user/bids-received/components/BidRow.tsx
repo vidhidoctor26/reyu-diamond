@@ -14,6 +14,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const formatDate = (d: string) =>
   new Date(d).toLocaleDateString("en-US", {
@@ -23,8 +25,21 @@ const formatDate = (d: string) =>
     minute: "2-digit",
   });
 
-const BidRow = ({ bid, setSelectedBid, setActionDialog }: any) => {
+const BidRow = ({
+  bid,
+  setSelectedBid,
+  setActionDialog,
+  isHighest,
+  listingStatus,
+  hasAcceptedBid,
+}: any) => {
+  const navigate = useNavigate();
   const status = bid.status;
+  const showActionButton =
+    isHighest &&
+    status === "pending" &&
+    listingStatus === "listed" &&
+    !hasAcceptedBid;
 
   return (
     <div className="py-4 flex justify-between items-center">
@@ -59,6 +74,20 @@ const BidRow = ({ bid, setSelectedBid, setActionDialog }: any) => {
 
         <BidStatusBadge status={status} />
 
+        {showActionButton && (
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white h-8"
+            onClick={() => {
+              setSelectedBid(bid);
+              setActionDialog("accept");
+            }}
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Accept Bid
+          </Button>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-2 rounded-lg hover:bg-muted">
@@ -79,34 +108,8 @@ const BidRow = ({ bid, setSelectedBid, setActionDialog }: any) => {
               </DropdownMenuItem>
             )}
 
-            {status === "pending" && (
-              <DropdownMenuItem
-                className="text-emerald-600"
-                onClick={() => {
-                  setSelectedBid(bid);
-                  setActionDialog("accept");
-                }}
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Accept Bid
-              </DropdownMenuItem>
-            )}
-
-            {status === "pending" && (
-              <DropdownMenuItem
-                className="text-rose-500"
-                onClick={() => {
-                  setSelectedBid(bid);
-                  setActionDialog("reject");
-                }}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Reject Bid
-              </DropdownMenuItem>
-            )}
-
-            {status === "accepted" && (
-              <DropdownMenuItem>
+            {status === "accepted" && bid.dealId && (
+              <DropdownMenuItem onClick={() => navigate(`/user/deals/${bid.dealId}`)}>
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Deal
               </DropdownMenuItem>

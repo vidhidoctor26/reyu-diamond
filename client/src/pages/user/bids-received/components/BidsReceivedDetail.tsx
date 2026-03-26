@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Diamond, Clock, Shield, User, MessageSquare, Loader2 } from "lucide-react";
+import { ArrowLeft, Diamond, Clock, Shield, User, Check, ExternalLink, Loader2 } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { bidActions } from "@/store/slices/bidSlice";
 import { auctionActions } from "@/store/slices/auctionSlice";
+import AcceptBidDialog from "./AcceptBidDialog";
+import { useState } from "react";
 
 const getTimeLeft = (endDate?: string): string => {
   if (!endDate) return "—";
@@ -35,6 +37,9 @@ const BidsReceivedDetail = () => {
 
   const { auctionBids, loading } = useAppSelector((s) => s.bid);
   const { selectedAuction }      = useAppSelector((s) => s.auction);
+
+  const [selectedBid, setSelectedBid] = useState<any>(null);
+  const [actionDialog, setActionDialog] = useState<"accept" | null>(null);
 
   useEffect(() => {
     if (!listingId) return;
@@ -195,20 +200,60 @@ const BidsReceivedDetail = () => {
                   </div>
 
                   {/* RIGHT */}
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className={`text-xl font-semibold ${i === 0 ? "text-emerald-600" : "text-accent"}`}>
-                        ${bid.bidAmount.toLocaleString()}
-                      </p>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p
+                          className={`text-xl font-semibold ${
+                            i === 0 ? "text-emerald-600" : "text-accent"
+                          }`}
+                        >
+                          ${bid.bidAmount.toLocaleString()}
+                        </p>
+                      </div>
+
+                      {i === 0 &&
+                        bid.status?.toUpperCase() === "ACTIVE" &&
+                        selectedAuction?.status === "active" &&
+                        !bids.some((b) => b.status === "ACCEPTED") && (
+                          <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            onClick={() => {
+                              setSelectedBid(bid);
+                              setActionDialog("accept");
+                            }}
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Accept Bid
+                          </Button>
+                        )}
+
+                      {bid.status?.toUpperCase() === "ACCEPTED" && bid.dealId && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/user/deals/${bid.dealId}`)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Deal
+                        </Button>
+                      )}
+
+                      {getStatusBadge(bid.status)}
                     </div>
-                    {getStatusBadge(bid.status)}
-                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      <AcceptBidDialog
+        actionDialog={actionDialog}
+        setActionDialog={setActionDialog}
+        selectedBid={selectedBid}
+        setSelectedBid={setSelectedBid}
+      />
     </DashboardShell>
   );
 };

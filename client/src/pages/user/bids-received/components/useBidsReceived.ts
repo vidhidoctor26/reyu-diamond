@@ -32,6 +32,7 @@ export const useBidsOnMyListings = () => {
       status:      bid.status?.toLowerCase(),
       placedAt:    bid.createdAt,
       isHighest:   bid.isHighestBid,
+      dealId:      bid.dealId,
       bidder: {
         name:     bid.buyerId?.name || "Buyer",
         verified: true,

@@ -51,7 +51,7 @@ const initialState: AuthState = {
   kycStatus: null,
   complianceLoaded: false,
 
-  loading: false,
+  loading: true,
   error: null,
 
   flow: {
@@ -217,10 +217,7 @@ const authSlice = createSlice({
 
     // ✅ Called by saga after clearing all other slices
     logoutSuccess() {
-      localStorage.removeItem("token");
-      sessionStorage.removeItem("token");
-      delete api.defaults.headers.common.Authorization;
-      return initialState;
+      return { ...initialState, loading: false };
     },
   },
 });

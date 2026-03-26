@@ -2,6 +2,7 @@ import Escrow from "../models/Escrow.model";
 import { Deal } from "../models/Deal.model";
 import { stripe } from "../config/stripe";
 import { User } from "../models/User.model";
+import { Inventory } from "../models/Inventory.model";
 import mongoose from "mongoose";
 import { CustomError, HTTP_STATUS, ErrorCode } from "../utils";
 import {
@@ -154,6 +155,13 @@ export const releaseEscrowService = async (
     });
 
     await deal.save({ session });
+    const inventory = await Inventory.findById(deal.inventoryId);
+    if (!inventory) {
+      throw new CustomError("inventory not found", HTTP_STATUS.NOT_FOUND, ErrorCode.NOT_FOUND);
+    }
+
+    inventory.status = "sold";
+    await inventory.save({ session });
 
     await session.commitTransaction();
     session.endSession();
