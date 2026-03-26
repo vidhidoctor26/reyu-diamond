@@ -2,12 +2,20 @@ import express from "express";
 import * as AdController from "../controllers/advertisement.controller";
 import { protect } from "../middlewares/auth.middleware";
 import { permit } from "../middlewares/permission.middleware";
+import { adsUpload } from "../middlewares/upload.middleware";
+import { adLimiter } from "../middlewares/rateLimit.middleware";
 
 const router = express.Router();
 
 /* USER */
 
-router.post("/request", protect, AdController.requestAdController);
+router.post(
+  "/request",
+  protect,
+  adLimiter,
+  adsUpload.single("media"),
+  AdController.requestAdController
+);
 
 router.get("/my-ads", protect, AdController.getMyAdsController);
 
@@ -21,11 +29,11 @@ router.get("/:adId/click", AdController.clickAdController);
 
 /* ADMIN */
 
-router.patch(
-  "/:adId/status",
-  protect,
-  permit("admin"),
-  AdController.updateAdStatusController
-);
+// router.patch(
+//   "/:adId/status",
+//   protect,
+//   permit("admin"),
+//   AdController.updateAdStatusController
+// );
 
 export default router;

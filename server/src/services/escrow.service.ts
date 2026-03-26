@@ -11,6 +11,8 @@ import {
 } from "./user-stats.service";
 import logger from "../utils/logger";
 import * as NotificationEvents from "../notifications/events";
+ import { Inventory } from "../models/Inventory.model";
+
 
 
 /* =======================================================
@@ -139,6 +141,7 @@ export const releaseEscrowService = async (
 
   const session = await mongoose.startSession();
   session.startTransaction();
+  let transactionCommitted = false;
 
   try {
     escrow.status = "RELEASED";
@@ -146,6 +149,7 @@ export const releaseEscrowService = async (
     await escrow.save({ session });
 
     deal.status = "COMPLETED";
+    deal.payment.isPaid = true;
     deal.history.push({
       status: "COMPLETED",
       changedBy: userId as any,
@@ -155,7 +159,16 @@ export const releaseEscrowService = async (
 
     await deal.save({ session });
 
+    const inventory = await Inventory.findById(deal.inventoryId);
+    if (!inventory) {
+      throw new CustomError("inventory not found", HTTP_STATUS.NOT_FOUND, ErrorCode.NOT_FOUND);
+    }
+
+    inventory.status = "sold";
+    await inventory.save({ session });
+
     await session.commitTransaction();
+    transactionCommitted = true;
     session.endSession();
 
     // ✅ Stats update AFTER commit
@@ -173,7 +186,9 @@ export const releaseEscrowService = async (
       transferId: transfer.id,
     };
   } catch (error) {
-    await session.abortTransaction();
+    if (!transactionCommitted) {
+      await session.abortTransaction();
+    }
     session.endSession();
     throw error;
   }
@@ -213,6 +228,7 @@ export const refundEscrowService = async (
 
   const session = await mongoose.startSession();
   session.startTransaction();
+  let transactionCommitted = false;
 
   try {
     escrow.status = "REFUNDED";
@@ -220,6 +236,7 @@ export const refundEscrowService = async (
     await escrow.save({ session });
 
     deal.status = "CANCELLED";
+    deal.payment.isPaid = false;
     deal.history.push({
       status: "CANCELLED",
       changedBy: userId as any,
@@ -230,6 +247,7 @@ export const refundEscrowService = async (
     await deal.save({ session });
 
     await session.commitTransaction();
+    transactionCommitted = true;
     session.endSession();
 
     await handleDealCancelled({
@@ -246,7 +264,9 @@ export const refundEscrowService = async (
       refundId: refund.id,
     };
   } catch (error) {
-    await session.abortTransaction();
+    if (!transactionCommitted) {
+      await session.abortTransaction();
+    }
     session.endSession();
     throw error;
   }
