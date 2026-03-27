@@ -118,15 +118,15 @@ export const sendMessageService = async ({
   // 🔥 Notifications
   const sender = await User.findById(senderId).select("name").lean();
   const senderName = sender?.name || "Someone";
-  
+
   const recipientId = updateResult.participantIds.find(id => id.toString() !== senderId.toString());
-  
+
   if (recipientId) {
     NotificationEvents.notifyChatMessage(
-        recipientId.toString(), 
-        senderName, 
-        text, 
-        conversationId
+      recipientId.toString(),
+      senderName,
+      text,
+      conversationId
     );
   }
 
@@ -166,7 +166,7 @@ export const getConversationMessagesService = async ({
     .sort({ sentAt: -1 }) // Get latest messages first for better chat UI performance
     .skip(skip)
     .limit(limit)
-    .populate("senderId", "firstName lastName email")
+    .populate("senderId", "name email")
     .lean();
 
   return messages;
@@ -191,7 +191,7 @@ export const getUserConversationsService = async ({
     .sort({ updatedAt: -1 })
     .skip(skip)
     .limit(limit)
-    .populate("participantIds", "firstName lastName email")
+    .populate("participantIds", "name email")
     .lean();
 
   return conversations;

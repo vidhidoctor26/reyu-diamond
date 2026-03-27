@@ -218,24 +218,21 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
 
     // ✅ fetch user profile
     const profileRes = yield call(api.get, "/user/profile");
-    
-    // 🔍 Handle nested user object: { success: true, data: { user: { ... } } }
     const serverUser = profileRes.data.data.user;
-    
+
     if (!serverUser) {
-        throw new Error("User data missing from profile response");
+      throw new Error("User data missing from profile response");
     }
 
-    // ✅ fetch kyc status with fallback to isKycVerified flag
+    // ✅ fetch kyc status with fallback
     let kycStatus = serverUser.isKycVerified ? "APPROVED" : "NOT_STARTED";
-    
+
     try {
       const kycRes = yield call(api.get, "/kyc/me");
       if (kycRes?.data?.data?.status) {
         kycStatus = kycRes.data.data.status.toUpperCase();
       }
     } catch (kycErr: any) {
-      // 404 is expected if KYC hasn't been started
       if (kycErr.response?.status !== 404) {
         console.error("KYC fetch error during hydration:", kycErr);
       }
@@ -250,6 +247,7 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
           email: serverUser.email,
           role: serverUser.role,
         },
+        token, // ✅ pass token so Redux state has it
         accountStatus: serverUser.accountStatus || "ACTIVE",
         kycStatus,
       }),

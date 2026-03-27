@@ -11,11 +11,13 @@ interface Props {
   myId: string;
   loading: boolean;
   search: string;
+  
   onSearchChange: (v: string) => void;
   onSelect: (id: string) => void;
 }
 
 const getOtherParticipant = (conv: Conversation, myId: string) => {
+  console.log("getOtherParticipant:", { conv, myId });
   const other = conv.participantIds.find((p) => {
     const id = typeof p === "string" ? p : (p as any)._id;
     return id !== myId;
@@ -24,6 +26,7 @@ const getOtherParticipant = (conv: Conversation, myId: string) => {
   const name =
     typeof other === "string"
       ? "User"
+      
       : (other as any).name || (other as any).email || "User";
   return { name, initial: name.charAt(0).toUpperCase() };
 };

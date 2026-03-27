@@ -185,21 +185,23 @@ const authSlice = createSlice({
       state.loading = true;
     },
 
-    hydrateSessionSuccess(
-      state,
-      action: PayloadAction<{
-        user: User;
-        accountStatus: "ACTIVE" | "SUSPENDED" | "REJECTED";
-        kycStatus: AuthState["kycStatus"];
-      }>,
-    ) {
-      state.loading = false;
-      state.user = action.payload.user;
-      state.accountStatus = action.payload.accountStatus;
-      state.kycStatus = action.payload.kycStatus;
-      state.isAuthenticated = true;
-      state.complianceLoaded = true;
-    },
+   hydrateSessionSuccess(
+  state,
+  action: PayloadAction<{
+    user: User;
+    token: string; // ← add this
+    accountStatus: "ACTIVE" | "SUSPENDED" | "REJECTED";
+    kycStatus: AuthState["kycStatus"];
+  }>,
+) {
+  state.loading = false;
+  state.user = action.payload.user;
+  state.token = action.payload.token; // ← add this
+  state.accountStatus = action.payload.accountStatus;
+  state.kycStatus = action.payload.kycStatus;
+  state.isAuthenticated = true;
+  state.complianceLoaded = true;
+},
 
     hydrateSessionFailure(state) {
       state.loading = false;

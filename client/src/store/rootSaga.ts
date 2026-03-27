@@ -6,9 +6,12 @@ import auctionSaga from "./sagas/auctionSaga";
 import bidSaga from "./sagas/bidSaga";
 import dealSaga from "./sagas/dealSaga";
 import chatSaga from "./sagas/chatSaga";
+import notificationsSaga from "./sagas/notificationsSaga";
+
 
 
 export default function* rootSaga() {
+  console.log("Saga Check:", { authSaga, inventorySaga, notificationsSaga });
   yield all([
     authSaga(),
     kycSaga(),
@@ -17,5 +20,7 @@ export default function* rootSaga() {
     bidSaga(),
     dealSaga(),
     chatSaga(),
+    notificationsSaga(),
+
   ]);
 }

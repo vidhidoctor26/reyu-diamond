@@ -13,5 +13,5 @@ export const initiateConversationAPI = (payload: {
   contextId: string;
 }) => api.post(ENDPOINTS.CHAT.INITIATE, payload);
 
-export const markAsReadAPI = (conversationId: string) =>
+export const markConversationAsReadAPI = (conversationId: string) =>
   api.patch(ENDPOINTS.CHAT.MARK_READ(conversationId));

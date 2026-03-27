@@ -36,6 +36,8 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const dispatch = useAppDispatch();
 
   const { user, kycStatus, isAuthenticated } = useAppSelector((state) => state.auth);
+  const notificationUnread = useAppSelector((state) => state.notifications.unreadCount);
+  const chatUnread = useAppSelector((state) => state.chat.totalUnread);
   const isKycApproved = kycStatus === "APPROVED";
 
   // ✅ Navigate AFTER saga has set isAuthenticated → false
@@ -78,6 +80,10 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
           {navItems.map((item: any) => {
             const isDisabled = item.requireKyc && !isKycApproved;
 
+            let badgeCount = 0;
+            if (item.label === "Messages") badgeCount = chatUnread;
+            if (item.label === "Notifications") badgeCount = notificationUnread;
+
             return (
               <li key={item.href}>
                 <NavLink
@@ -104,6 +110,12 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
+
+                  {badgeCount > 0 && !isDisabled && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground shadow-sm">
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
                   {isDisabled && (
                     <Shield className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
                   )}

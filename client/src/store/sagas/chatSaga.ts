@@ -4,8 +4,7 @@ import {
   getConversationsAPI,
   getMessagesAPI,
   initiateConversationAPI,
-  
-
+  markConversationAsReadAPI,  // ✅ now imported
 } from "@/services/chat.service";
 
 function* fetchConversationsSaga(): any {
@@ -24,6 +23,10 @@ function* fetchMessagesSaga(action: any): any {
       conversationId: action.payload,
       messages: res.data.data,
     }));
+
+    // ✅ Persist mark-as-read to DB right after messages load
+    yield call(markConversationAsReadAPI, action.payload);
+
   } catch (err: any) {
     yield put(chatActions.fetchMessagesFailure(err?.response?.data?.message || err.message));
   }

@@ -84,4 +84,11 @@ export const ENDPOINTS = {
   MARK_READ: (conversationId: string) => `/chats/${conversationId}`,
 },
 
+NOTIFICATIONS: {
+  LIST: "/notifications",
+  UNREAD_COUNT: "/notifications/unread-count",
+  MARK_AS_READ: (id: string) => `/notifications/read/${id}`,
+  MARK_ALL_AS_READ: "/notifications/read-all",
+},
+
 };

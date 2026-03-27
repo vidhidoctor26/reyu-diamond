@@ -86,12 +86,12 @@ const ChatMessageBubble = ({ msg, isMe, isGroupStart, participantInitial, onRepl
         </div>
 
         {/* Reply action */}
-        <button
+        {/* <button
           onClick={() => onReply(msg)}
           className="hidden group-hover:flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5 px-1 hover:text-foreground transition-colors"
         >
           <Reply className="h-3 w-3" /> Reply
-        </button>
+        </button> */}
       </div>
     </motion.div>
   );

@@ -84,7 +84,8 @@ const chatSlice = createSlice({
       action: PayloadAction<{ conversationId: string; messages: ChatMessage[] }>
     ) {
       state.messagesLoading = false;
-      state.messages[action.payload.conversationId] = action.payload.messages;
+      // Reverse so newest messages appearing first from API are rendered at the bottom
+      state.messages[action.payload.conversationId] = [...action.payload.messages].reverse();
     },
     fetchMessagesFailure(state, action: PayloadAction<string>) {
       state.messagesLoading = false;
@@ -156,9 +157,50 @@ const chatSlice = createSlice({
     },
 
     /* ── Unread count from socket ── */
-    incrementUnread(state, action: PayloadAction<string>) {
-      const conv = state.conversations.find((c) => c._id === action.payload);
-      if (conv) state.totalUnread += 1;
+    incrementUnread(state, action: PayloadAction<{ conversationId: string; myId: string }>) {
+      const conv = state.conversations.find((c) => c._id === action.payload.conversationId);
+      if (conv) {
+        const setting = conv.userSettings?.find(
+          (s: any) => s.userId?.toString() === action.payload.myId
+        );
+        if (setting) {
+          setting.unreadCount += 1;
+        }
+
+        // recalculate total accurately
+        state.totalUnread = state.conversations.reduce((sum, currentConv) => {
+          const mySettings = currentConv.userSettings?.find(
+            (s: any) => s.userId?.toString() === action.payload.myId
+          );
+          return sum + (mySettings?.unreadCount || 0);
+        }, 0);
+      }
+    },
+
+    /* ── Optimistic UI Updates ── */
+    optimisticMessageAdded(state, action: PayloadAction<ChatMessage>) {
+      const msg = action.payload;
+      const cid = msg.conversationId;
+      if (!state.messages[cid]) state.messages[cid] = [];
+      state.messages[cid].push(msg);
+
+      const conv = state.conversations.find((c) => c._id === cid);
+      if (conv) {
+        conv.lastMessageText = msg.text;
+        conv.lastMessageAt = msg.sentAt || new Date().toISOString();
+      }
+    },
+
+    updateMessageStatus(state, action: PayloadAction<{ conversationId: string; messageId: string; status: ChatMessage["status"]; realId?: string }>) {
+      const { conversationId, messageId, status, realId } = action.payload;
+      const msgs = state.messages[conversationId];
+      if (msgs) {
+        const idx = msgs.findIndex((m) => m._id === messageId);
+        if (idx !== -1) {
+          msgs[idx].status = status;
+          if (realId) msgs[idx]._id = realId;
+        }
+      }
     },
 
     clearChat(state) {

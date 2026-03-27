@@ -42,6 +42,7 @@ import DealsPage from "@/pages/user/deal/DealsPage";
 import DealDetailPage from "@/pages/user/deal/DealDetailPage";
 import PaymentsPage from "@/pages/user/payments/PaymentsPage";
 import MessagesPage from "@/pages/user/chat/MessagesPage";
+import NotificationsPage from "@/pages/user/notifications/NotificationsPage";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -159,6 +160,7 @@ const AppRoutes = () => {
         <Route path="deals/:dealId" element={<DealDetailPage />} />
         <Route path="payments" element={<PaymentsPage />} />
         <Route path="messages" element={<MessagesPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
 
       </Route>
 

@@ -10,11 +10,6 @@ export const KycStatusBadge = () => {
 
   const user = useAppSelector((state: any) => state.auth.user);
 
-console.log("FULL AUTH USER:", user);
-
-
-  console.log("AUTH KYC STATUS:", kycStatus);
-
   if (!kycStatus || kycStatus === "NOT_STARTED") return null;
 
   if (kycStatus === "APPROVED") {
