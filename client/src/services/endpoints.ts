@@ -89,6 +89,7 @@ NOTIFICATIONS: {
   UNREAD_COUNT: "/notifications/unread-count",
   MARK_AS_READ: (id: string) => `/notifications/read/${id}`,
   MARK_ALL_AS_READ: "/notifications/read-all",
+  SAVE_FCM_TOKEN: "/user/fcm-token",
 },
 
 };

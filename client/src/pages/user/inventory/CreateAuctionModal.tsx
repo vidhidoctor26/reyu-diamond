@@ -10,7 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,14 +25,34 @@ import { CalendarIcon, Gavel, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InventoryItem } from "./components/inventory.types";
 
-const schema = z.object({
-  basePrice: z.number().min(1, "Price is required"),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
-}).refine((data) => data.endDate >= data.startDate, {
-  message: "End date must be after start date",
-  path: ["endDate"],
-});
+/**
+ * ✅ UPDATED SCHEMA
+ */
+const schema = z
+  .object({
+    basePrice: z.number().min(1, "Base price required"),
+
+    startDate: z.date(),
+    startTime: z.string().min(1, "Start time required"),
+
+    endDate: z.date(),
+    endTime: z.string().min(1, "End time required"),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(
+        `${format(data.startDate, "yyyy-MM-dd")}T${data.startTime}`
+      );
+      const end = new Date(
+        `${format(data.endDate, "yyyy-MM-dd")}T${data.endTime}`
+      );
+      return end > start;
+    },
+    {
+      message: "End must be after start",
+      path: ["endTime"],
+    }
+  );
 
 type FormData = z.infer<typeof schema>;
 
@@ -42,38 +66,48 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.auction);
 
-  const { control, register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { basePrice: item.price || 0 },
   });
 
+  /**
+   * ✅ UPDATED SUBMIT
+   */
   const onSubmit = (data: FormData) => {
-    const toStartOfDay = (date: Date) => {
-      const d = new Date(date);
-      d.setHours(6, 0, 0, 0);   // 06:00 local = 00:30 UTC
-      return d.toISOString();
-    };
+    const startLocal = `${format(data.startDate, "yyyy-MM-dd")}T${data.startTime}`;
+    const endLocal = `${format(data.endDate, "yyyy-MM-dd")}T${data.endTime}`;
 
-    const toEndOfDay = (date: Date) => {
-      const d = new Date(date);
-      d.setHours(23, 59, 0, 0); // 23:59 local = 18:29 UTC
-      return d.toISOString();
-    };
+    const startDateISO = new Date(startLocal).toISOString();
+    const endDateISO = new Date(endLocal).toISOString();
 
-    dispatch(auctionActions.createAuctionRequest({
-      inventoryId: item._id,
-      basePrice: data.basePrice,
-      startDate: toStartOfDay(data.startDate), // ✅ start of day
-      endDate: toEndOfDay(data.endDate),       // ✅ end of day
-      onSuccess: () => {
-        toast({ title: "Auction Created", description: "Successfully listed." });
-        onSuccess();
-      },
-      onError: (msg: string) =>
-        toast({ title: "Error", description: msg, variant: "destructive" }),
-    }));
+    dispatch(
+      auctionActions.createAuctionRequest({
+        inventoryId: item._id,
+        basePrice: data.basePrice,
+        startDate: startDateISO,
+        endDate: endDateISO,
+        onSuccess: () => {
+          toast({
+            title: "Auction Created",
+            description: "Successfully listed.",
+          });
+          onSuccess();
+        },
+        onError: (msg: string) =>
+          toast({
+            title: "Error",
+            description: msg,
+            variant: "destructive",
+          }),
+      })
+    );
   };
-
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -81,7 +115,6 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
         <div className="bg-[#1e293b] p-6 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl text-white">
-              <Gavel className="w-5 h-5 text-blue-400" />
               <Gavel className="w-5 h-5 text-blue-400" />
               Create Auction
             </DialogTitle>
@@ -91,69 +124,95 @@ const CreateAuctionModal = ({ item, onClose, onSuccess }: Props) => {
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5 bg-white">
-          {/* Price Field */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-6 space-y-5 bg-white"
+        >
+          {/* Price */}
           <div className="space-y-2">
-            <Label htmlFor="basePrice" className="text-xs font-bold uppercase text-slate-500">Starting Bid (USD)</Label>
+            <Label className="text-xs font-bold uppercase text-slate-500">
+              Starting Bid (USD)
+            </Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                id="basePrice"
                 type="number"
-                className="pl-9 h-12 border-slate-200 focus:ring-blue-500"
+                className="pl-9 h-12"
                 {...register("basePrice", { valueAsNumber: true })}
               />
             </div>
-            {errors.basePrice && <p className="text-xs text-red-500">{errors.basePrice.message}</p>}
+            {errors.basePrice && (
+              <p className="text-xs text-red-500">
+                {errors.basePrice.message}
+              </p>
+            )}
           </div>
 
-          {/* Date Pickers */}
+          {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: "startDate" as const, label: "Start Date" },
-              { name: "endDate" as const, label: "End Date" }
-            ].map((field) => (
-              <div key={field.name} className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">{field.label}</Label>
-                <Controller
-                  control={control}
-                  name={field.name}
-                  render={({ field: { value, onChange } }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-between text-left font-normal h-12 border-slate-200",
-                            !value && "text-muted-foreground"
-                          )}
-                        >
-                          {value ? format(value, "PPP") : <span>Pick date</span>}
-                          <CalendarIcon className="h-4 w-4 text-slate-400" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={value}
-                          onSelect={onChange}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
-                {errors[field.name] && <p className="text-[10px] text-red-500">{errors[field.name]?.message}</p>}
-              </div>
+            {["startDate", "endDate"].map((name) => (
+              <Controller
+                key={name}
+                control={control}
+                name={name as "startDate" | "endDate"}
+                render={({ field: { value, onChange } }) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full h-12">
+                        {value ? format(value, "PPP") : "Pick date"}
+                        <CalendarIcon className="ml-2 h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                      className="w-auto p-0 z-50"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={value}
+                        onSelect={onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              />
             ))}
           </div>
 
+          {/* 🔥 TIME INPUTS */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">Start Time</Label>
+              <Input type="time" {...register("startTime")} />
+              {errors.startTime && (
+                <p className="text-xs text-red-500">
+                  {errors.startTime.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-xs ">End Time</Label>
+              <Input type="time" {...register("endTime")} />
+              {errors.endTime && (
+                <p className="text-xs text-red-500">
+                  {errors.endTime.message}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-4">
-            <Button variant="ghost" type="button" onClick={onClose} className="flex-1 h-12 text-slate-500">
+            <Button variant="ghost" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button disabled={loading} type="submit" className="flex-1 h-12 bg-[#1e293b] hover:bg-[#0f172a] text-white">
+            <Button disabled={loading} type="submit" className="flex-1">
               {loading ? "Processing..." : "Confirm Listing"}
             </Button>
           </div>

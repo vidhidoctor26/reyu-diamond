@@ -23,6 +23,8 @@ import { userNav, userBottomNav } from "@/components/navigation/userNav";
 import { adminNav, adminBottomNav } from "@/components/navigation/adminNav";
 import { authActions } from "@/store/slices/authSlice";
 import { KycStatusBadge } from "@/components/KycStatusBadge";
+import { requestFcmToken, onMessageListener } from "@/utils/fcm"; 
+import { toast } from "sonner";
 
 interface SidebarProps {
   role?: "user" | "admin";
@@ -39,6 +41,34 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const notificationUnread = useAppSelector((state) => state.notifications.unreadCount);
   const chatUnread = useAppSelector((state) => state.chat.totalUnread);
   const isKycApproved = kycStatus === "APPROVED";
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Step A: Request permission and send token to backend
+      requestFcmToken();
+
+      // Step B: Listen for foreground messages (when app is open)
+      onMessageListener()
+  .then((payload: any) => { // Use 'any' or 'MessagePayload' to unlock properties
+    const { notification, data } = payload;
+
+    toast.success(notification?.title || "New Notification", {
+      description: notification?.body,
+      action: {
+        label: "View",
+        onClick: () => {
+          if (data?.type === "CHAT") {
+            navigate(`/user/messages?id=${data.conversationId}`);
+          } else {
+            navigate("/user/notifications");
+          }
+        }
+      }
+    });
+  })
+        .catch((err) => console.error("Foreground FCM error:", err));
+    }
+  }, [isAuthenticated, user, navigate]);
 
   // ✅ Navigate AFTER saga has set isAuthenticated → false
   useEffect(() => {
