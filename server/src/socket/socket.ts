@@ -34,10 +34,45 @@ export const getIO = () => {
 // ======================
 const setupSocket = (io: Server) => {
   // AUTH
+let ioInstance: Server; // ✅ GLOBAL IO
+
+// ======================
+// INIT SOCKET
+// ======================
+export const initSocket = (server: any) => {
+  ioInstance = new Server(server, {
+    cors: {
+      origin: "*",
+    },
+  });
+
+  setupSocket(ioInstance); // attach listeners
+
+  return ioInstance;
+};
+
+// ======================
+// GET IO (USED IN SERVICES)
+// ======================
+export const getIO = () => {
+  if (!ioInstance) {
+    throw new Error("Socket.io not initialized");
+  }
+  return ioInstance;
+};
+
+// ======================
+// MAIN SOCKET LOGIC
+// ======================
+const setupSocket = (io: Server) => {
+  // AUTH
   io.use((socket: any, next) => {
     try {
       const token = socket.handshake.auth?.token;
 
+      console.log("🔐 Incoming token:", token);
+
+      if (!token) return next(new Error("No token"));
       console.log("🔐 Incoming token:", token);
 
       if (!token) return next(new Error("No token"));
@@ -49,15 +84,22 @@ const setupSocket = (io: Server) => {
     } catch (err: any) {
       console.error("❌ AUTH ERROR:", err.message);
       next(new Error("Invalid token"));
+    } catch (err: any) {
+      console.error("❌ AUTH ERROR:", err.message);
+      next(new Error("Invalid token"));
     }
   });
 
   // CONNECTION
+  // CONNECTION
   io.on("connection", (socket: any) => {
+    const userId = socket.user?.userId || socket.user?.id;
     const userId = socket.user?.userId || socket.user?.id;
 
     console.log("🔥 SOCKET CONNECTED:", socket.id, "USER:", userId);
+    console.log("🔥 SOCKET CONNECTED:", socket.id, "USER:", userId);
 
+    socket.join(userId.toString());
     socket.join(userId.toString());
 
     socket.on("joinconversation", (conversationId: string) => {
@@ -76,11 +118,37 @@ const setupSocket = (io: Server) => {
           senderId: userId,
           text,
         });
+    socket.on("joinconversation", (conversationId: string) => {
+      console.log("📥 JOIN ROOM:", conversationId);
+      socket.join(conversationId);
+    });
 
+    socket.on("sendMessage", async (data: any) => {
+      console.log("📥 BACKEND RECEIVED:", data);
+
+      const { conversationId, text, tempId } = data;
+
+      try {
+        const msg = await ChatService.sendMessageService({
+          conversationId,
+          senderId: userId,
+          text,
+        });
+
+        socket.to(conversationId).emit("newMessage", msg);
         socket.to(conversationId).emit("newMessage", msg);
 
         socket.emit("messageSent", {
+        socket.emit("messageSent", {
           success: true,
+          messageId: msg._id,
+          tempId,
+          status: "SENT",
+        });
+
+      } catch (err: any) {
+        console.error("❌ SEND ERROR:", err.message);
+
           messageId: msg._id,
           tempId,
           status: "SENT",
@@ -92,10 +160,18 @@ const setupSocket = (io: Server) => {
         socket.emit("socketError", {
           success: false,
           message: err.message,
+          message: err.message,
         });
       }
     });
 
+    socket.on("disconnect", (reason: string) => {
+      console.log("❌ DISCONNECTED:", socket.id, reason);
+    });
+  });
+
+  io.engine.on("connection_error", (err: any) => {
+    console.error("🚨 ENGINE ERROR:", err.message);
     socket.on("disconnect", (reason: string) => {
       console.log("❌ DISCONNECTED:", socket.id, reason);
     });
