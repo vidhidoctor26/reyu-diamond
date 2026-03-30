@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import * as ChatService from "../services/chat.service";
 
-let ioInstance: Server; // ✅ GLOBAL IO
+let ioInstance: Server | null = null;
 
 // ======================
 // INIT SOCKET
@@ -11,106 +11,92 @@ export const initSocket = (server: any) => {
   ioInstance = new Server(server, {
     cors: {
       origin: "*",
+      methods: ["GET", "POST"],
     },
   });
 
-  setupSocket(ioInstance); // attach listeners
+  setupSocket(ioInstance);
 
   return ioInstance;
 };
 
 // ======================
-// GET IO (USED IN SERVICES)
+// GET IO INSTANCE
 // ======================
-export const getIO = () => {
+export const getIO = (): Server => {
   if (!ioInstance) {
-    throw new Error("Socket.io not initialized");
+    throw new Error("❌ Socket.io not initialized");
   }
   return ioInstance;
 };
 
 // ======================
-// MAIN SOCKET LOGIC
+// MAIN SOCKET SETUP
 // ======================
 const setupSocket = (io: Server) => {
-  // AUTH
-let ioInstance: Server; // ✅ GLOBAL IO
-
-// ======================
-// INIT SOCKET
-// ======================
-export const initSocket = (server: any) => {
-  ioInstance = new Server(server, {
-    cors: {
-      origin: "*",
-    },
-  });
-
-  setupSocket(ioInstance); // attach listeners
-
-  return ioInstance;
-};
-
-// ======================
-// GET IO (USED IN SERVICES)
-// ======================
-export const getIO = () => {
-  if (!ioInstance) {
-    throw new Error("Socket.io not initialized");
-  }
-  return ioInstance;
-};
-
-// ======================
-// MAIN SOCKET LOGIC
-// ======================
-const setupSocket = (io: Server) => {
-  // AUTH
+  // ======================
+  // AUTH MIDDLEWARE
+  // ======================
   io.use((socket: any, next) => {
     try {
       const token = socket.handshake.auth?.token;
 
       console.log("🔐 Incoming token:", token);
 
-      if (!token) return next(new Error("No token"));
-      console.log("🔐 Incoming token:", token);
+      if (!token) {
+        return next(new Error("No token provided"));
+      }
 
-      if (!token) return next(new Error("No token"));
-
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
       socket.user = decoded;
+
       next();
-    } catch (err: any) {
-      console.error("❌ AUTH ERROR:", err.message);
-      next(new Error("Invalid token"));
     } catch (err: any) {
       console.error("❌ AUTH ERROR:", err.message);
       next(new Error("Invalid token"));
     }
   });
 
+  // ======================
   // CONNECTION
-  // CONNECTION
+  // ======================
   io.on("connection", (socket: any) => {
     const userId = socket.user?.userId || socket.user?.id;
-    const userId = socket.user?.userId || socket.user?.id;
+
+    if (!userId) {
+      console.error("❌ No userId found in token");
+      socket.disconnect();
+      return;
+    }
 
     console.log("🔥 SOCKET CONNECTED:", socket.id, "USER:", userId);
-    console.log("🔥 SOCKET CONNECTED:", socket.id, "USER:", userId);
 
-    socket.join(userId.toString());
+    // Join personal room
     socket.join(userId.toString());
 
+    // ======================
+    // JOIN CONVERSATION
+    // ======================
     socket.on("joinconversation", (conversationId: string) => {
       console.log("📥 JOIN ROOM:", conversationId);
       socket.join(conversationId);
     });
 
+    // ======================
+    // SEND MESSAGE
+    // ======================
     socket.on("sendMessage", async (data: any) => {
-      console.log("📥 BACKEND RECEIVED:", data);
+      console.log("📥 MESSAGE RECEIVED:", data);
 
       const { conversationId, text, tempId } = data;
+
+      if (!conversationId || !text) {
+        return socket.emit("socketError", {
+          success: false,
+          message: "Missing conversationId or text",
+        });
+      }
 
       try {
         const msg = await ChatService.sendMessageService({
@@ -118,27 +104,11 @@ const setupSocket = (io: Server) => {
           senderId: userId,
           text,
         });
-    socket.on("joinconversation", (conversationId: string) => {
-      console.log("📥 JOIN ROOM:", conversationId);
-      socket.join(conversationId);
-    });
 
-    socket.on("sendMessage", async (data: any) => {
-      console.log("📥 BACKEND RECEIVED:", data);
-
-      const { conversationId, text, tempId } = data;
-
-      try {
-        const msg = await ChatService.sendMessageService({
-          conversationId,
-          senderId: userId,
-          text,
-        });
-
-        socket.to(conversationId).emit("newMessage", msg);
+        // Send message to others in room
         socket.to(conversationId).emit("newMessage", msg);
 
-        socket.emit("messageSent", {
+        // Acknowledge sender
         socket.emit("messageSent", {
           success: true,
           messageId: msg._id,
@@ -149,34 +119,24 @@ const setupSocket = (io: Server) => {
       } catch (err: any) {
         console.error("❌ SEND ERROR:", err.message);
 
-          messageId: msg._id,
-          tempId,
-          status: "SENT",
-        });
-
-      } catch (err: any) {
-        console.error("❌ SEND ERROR:", err.message);
-
         socket.emit("socketError", {
           success: false,
-          message: err.message,
-          message: err.message,
+          message: err.message || "Message sending failed",
         });
       }
     });
 
+    // ======================
+    // DISCONNECT
+    // ======================
     socket.on("disconnect", (reason: string) => {
-      console.log("❌ DISCONNECTED:", socket.id, reason);
+      console.log("❌ DISCONNECTED:", socket.id, "Reason:", reason);
     });
   });
 
-  io.engine.on("connection_error", (err: any) => {
-    console.error("🚨 ENGINE ERROR:", err.message);
-    socket.on("disconnect", (reason: string) => {
-      console.log("❌ DISCONNECTED:", socket.id, reason);
-    });
-  });
-
+  // ======================
+  // ENGINE ERROR HANDLING
+  // ======================
   io.engine.on("connection_error", (err: any) => {
     console.error("🚨 ENGINE ERROR:", err.message);
   });

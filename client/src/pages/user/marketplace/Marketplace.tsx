@@ -1,40 +1,40 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardShell from "@/components/layout/DashboardShell";
-
 import MarketplaceControls from "./components/MarketplaceControls";
-import { type FilterState } from "./components/MarketplaceControls";
-import { defaultFilters } from "./components/MarketplaceControls";
+import { type FilterState, defaultFilters } from "./components/MarketplaceControls";
 import MarketplaceResults from "./components/MarketplaceResults";
-
+import MarketplaceBanner from "./components/MarketplaceBanner";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { auctionActions } from "@/store/slices/auctionSlice";
+import { fetchActiveAdsRequest } from "@/store/slices/advertisementSlice";
 import { auctionToMarketplace } from "@/adapters/auction.adapter";
 
 const Marketplace = () => {
   const dispatch = useAppDispatch();
-  const { auctions, loading } = useAppSelector((state) => state.auction);
-  console.log("auctions:", auctions, "loading:", loading);
 
+  const { auctions, loading } = useAppSelector((state) => state.auction);
+  const { activeAds }         = useAppSelector((state) => state.advertisement);
 
   const [viewMode, setViewMode]             = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery]       = useState("");
   const [sortBy, setSortBy]                 = useState("newest");
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
 
-  /* ── Fetch once on mount ── */
+  /* ── Fetch on mount ── */
   useEffect(() => {
     dispatch(auctionActions.fetchAuctionsRequest({}));
+    dispatch(fetchActiveAdsRequest("MARKETPLACE")); // GET /ads?section=MARKETPLACE
   }, [dispatch]);
 
   /* ── Transform raw auctions ── */
- 
+  const allListings = useMemo(
+    () =>
+      auctions
+        .filter((a) => a.status === "active" || a.status === "upcoming")
+        .map(auctionToMarketplace),
+    [auctions]
+  );
 
-const allListings = useMemo(
-  () => auctions
-    .filter((a) => a.status === "active" || a.status === "upcoming")
-    .map(auctionToMarketplace),
-  [auctions]
-); 
   /* ── Client-side filter + sort ── */
   const listings = useMemo(() => {
     let result = allListings.filter((l) => {
@@ -48,8 +48,10 @@ const allListings = useMemo(
       )
         return false;
 
-      if (l.price < appliedFilters.priceRange[0] || l.price > appliedFilters.priceRange[1]) return false;
-      if (l.carat < appliedFilters.caratRange[0] || l.carat > appliedFilters.caratRange[1]) return false;
+      if (l.price < appliedFilters.priceRange[0] || l.price > appliedFilters.priceRange[1])
+        return false;
+      if (l.carat < appliedFilters.caratRange[0] || l.carat > appliedFilters.caratRange[1])
+        return false;
 
       if (
         appliedFilters.selectedShapes.length > 0 &&
@@ -59,13 +61,22 @@ const allListings = useMemo(
       )
         return false;
 
-      if (appliedFilters.selectedColors.length > 0 && !appliedFilters.selectedColors.includes(l.color))
+      if (
+        appliedFilters.selectedColors.length > 0 &&
+        !appliedFilters.selectedColors.includes(l.color)
+      )
         return false;
 
-      if (appliedFilters.selectedClarities.length > 0 && !appliedFilters.selectedClarities.includes(l.clarity))
+      if (
+        appliedFilters.selectedClarities.length > 0 &&
+        !appliedFilters.selectedClarities.includes(l.clarity)
+      )
         return false;
 
-      if (appliedFilters.selectedCuts.length > 0 && !appliedFilters.selectedCuts.includes(l.cut))
+      if (
+        appliedFilters.selectedCuts.length > 0 &&
+        !appliedFilters.selectedCuts.includes(l.cut)
+      )
         return false;
 
       return true;
@@ -83,7 +94,12 @@ const allListings = useMemo(
 
   return (
     <DashboardShell>
-      <div className="p-3 lg:p-2 space-y-8">
+      <div className="p-3 lg:p-2 space-y-6">
+
+        {/* Sponsored banner — only renders when approved ads exist */}
+        {activeAds.length > 0 && (
+          <MarketplaceBanner ads={activeAds} />
+        )}
 
         <MarketplaceControls
           searchQuery={searchQuery}

@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { User } from "../models/User.model";
+import path from "path";
 
-dotenv.config();
-
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 const seedAdmin = async () => {
   try {
     const mongoUri = process.env.MONGO_URI;

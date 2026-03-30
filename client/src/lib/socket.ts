@@ -14,7 +14,7 @@ export const getSocket = (): Socket => {
     socket = io(socketUrl, {
       path: "/socket.io",
       autoConnect: false,
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,
     });

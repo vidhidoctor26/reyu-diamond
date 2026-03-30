@@ -12,7 +12,6 @@ import {
 } from "./user-stats.service";
 import logger from "../utils/logger";
 import * as NotificationEvents from "../notifications/events";
- import { Inventory } from "../models/Inventory.model";
 
 
 
@@ -165,14 +164,7 @@ export const releaseEscrowService = async (
     }
 
     inventory.status = "sold";
-    await inventory.save({ session });
-
-    const inventory = await Inventory.findById(deal.inventoryId);
-    if (!inventory) {
-      throw new CustomError("inventory not found", HTTP_STATUS.NOT_FOUND, ErrorCode.NOT_FOUND);
-    }
-
-    inventory.status = "sold";
+  
     await inventory.save({ session });
 
     await session.commitTransaction();

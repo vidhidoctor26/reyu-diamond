@@ -29,4 +29,4 @@ export const createPaymentIntentAPI = (dealId: string) =>
   api.post(ENDPOINTS.ESCROW.CREATE_PAYMENT, { dealId });
 
 export const releaseEscrowAPI = (dealId: string) =>
-  api.post(ENDPOINTS.ESCROW.RELEASE(dealId));
+  api.post(ENDPOINTS.ESCROW.RELEASE(dealId), {});

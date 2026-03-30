@@ -7,6 +7,9 @@ import bidSaga from "./sagas/bidSaga";
 import dealSaga from "./sagas/dealSaga";
 import chatSaga from "./sagas/chatSaga";
 import notificationsSaga from "./sagas/notificationsSaga";
+import ratingSaga from "./sagas/ratingsaga";
+import badgeSaga from "./sagas/badgeSaga";
+import { advertisementSaga } from "./sagas/advertisementSaga";
 
 
 
@@ -21,6 +24,9 @@ export default function* rootSaga() {
     dealSaga(),
     chatSaga(),
     notificationsSaga(),
+    ratingSaga(),
+    badgeSaga(),
+    advertisementSaga(),
 
   ]);
 }

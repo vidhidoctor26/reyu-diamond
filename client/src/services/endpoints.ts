@@ -92,4 +92,24 @@ NOTIFICATIONS: {
   SAVE_FCM_TOKEN: "/user/fcm-token",
 },
 
+RATINGS: {
+  CREATE: (userId: string) => `/ratings/${userId}`,
+  GET_BY_USER: (userId: string) => `/ratings/${userId}`,
+  GET_MY_RATINGS: "/ratings/me",
+},
+
+BADGES: {
+  GET_BY_USER: (userId: string) => `/badges/${userId}`,
+  GET_MY_BADGES: "/badges/me",
+},
+
+  ADVERTISEMENTS: {
+    REQUEST:    "/ads/request",       // POST  (multipart)
+    MY_ADS:     "/ads/my-ads",        // GET
+    ACTIVE:     "/ads",               // GET   (?section=...)
+    GET_ONE:    (adId: string) => `/ads/${adId}`,          // GET
+    CLICK:      (adId: string) => `/ads/${adId}/click`,    // GET (redirect)
+    UPDATE_STATUS: (adId: string) => `/ads/${adId}/status`, // PATCH (admin)
+  },
+
 };

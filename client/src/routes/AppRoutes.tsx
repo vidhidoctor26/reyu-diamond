@@ -43,6 +43,8 @@ import DealDetailPage from "@/pages/user/deal/DealDetailPage";
 import PaymentsPage from "@/pages/user/payments/PaymentsPage";
 import MessagesPage from "@/pages/user/chat/MessagesPage";
 import NotificationsPage from "@/pages/user/notifications/NotificationsPage";
+import AdvertisementsList from "@/pages/user/advertisment/AdvertisementsList";
+import CreateAdvertisement from "@/pages/user/advertisment/CreateAdvertisement";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -161,6 +163,8 @@ const AppRoutes = () => {
         <Route path="payments" element={<PaymentsPage />} />
         <Route path="messages" element={<MessagesPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="advertisements" element={<AdvertisementsList />} />
+        <Route path="advertisements/create" element={<CreateAdvertisement />} />
 
       </Route>
 

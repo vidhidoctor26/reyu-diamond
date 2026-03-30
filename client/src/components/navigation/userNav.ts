@@ -25,6 +25,7 @@ export const userNav = [
   { icon: Wallet, label: "Payments", href: "/user/payments", requireKyc: true },
   { icon: MessageCircle, label: "Messages", href: "/user/messages", requireKyc: true  },
   { icon: Bell, label: "Notifications", href: "/user/notifications" },
+  { icon: MessageCircle, label: "Advertisements", href: "/user/advertisements", requireKyc: true },
 ];
 
 export const userBottomNav = [

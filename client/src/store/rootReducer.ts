@@ -7,8 +7,9 @@ import bidReducer from "./slices/bidSlice";
 import dealReducer from "./slices/dealSlice";
 import chatReducer from "./slices/chatSlice";
 import notificationReducer from "./slices/notificationsSlice";
-
-
+import ratingsReducer from "./slices/ratingSlice";
+import badgeReducer from "./slices/badgeSlice";
+import advertisementReducer from "./slices/advertisementSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -19,7 +20,10 @@ const rootReducer = combineReducers({
   deal: dealReducer,
   chat: chatReducer,
   notifications: notificationReducer,
+  rating: ratingsReducer,
+  badge: badgeReducer,
+  advertisement: advertisementReducer, // ← was "adcertisement"
 });
 
-export type RootState = ReturnType<typeof rootReducer>; 
+export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;

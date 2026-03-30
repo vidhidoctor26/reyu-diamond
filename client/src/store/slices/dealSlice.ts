@@ -230,18 +230,20 @@ const dealSlice = createSlice({
     },
 
     releaseEscrowRequest(state, _action: PayloadAction<{
-  dealId: string;
-  onSuccess?: () => void;
-  onError?: (msg: string) => void;
-}>) { state.actionLoading = true; },
-releaseEscrowSuccess(state, action: PayloadAction<any>) {
-  state.actionLoading = false;
-  if (action.payload?.deal) state.selectedDeal = action.payload.deal;
-},
-releaseEscrowFailure(state, action: PayloadAction<string>) {
-  state.actionLoading = false;
-  state.error = action.payload;
-},
+      dealId: string;
+      onSuccess?: () => void;
+      onError?: (msg: string) => void;
+    }>) { state.actionLoading = true; },
+    releaseEscrowSuccess(state, action: PayloadAction<any>) {
+      state.actionLoading = false;
+      if (action.payload?.deal) state.selectedDeal = action.payload.deal;
+    },
+    releaseEscrowFailure(state, action: PayloadAction<string>) {
+      state.actionLoading = false;
+      state.error = action.payload;
+    },
+
+    
 
     clearClientSecret(state) {
       state.clientSecret = null;

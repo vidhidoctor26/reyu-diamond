@@ -16,13 +16,23 @@ interface Props {
 }
 
 const ShipModal = ({ open, onOpenChange, onConfirm, loading }: Props) => {
+    console.log("ShipModal props", { open, loading });
+    console.log("ShipModal render", { open, loading });
     const [courier, setCourier] = useState("");
     const [trackingNumber, setTrackingNumber] = useState("");
 
-    const handleConfirm = () => {
-        if (!courier || !trackingNumber) return;
-        onConfirm(courier, trackingNumber);
-    };
+   const handleConfirm = () => {
+  console.log("🔥 BUTTON CLICKED");
+
+  if (!courier || !trackingNumber) {
+    console.log("❌ Missing fields");
+    return;
+  }
+
+  console.log("📦 Sending to parent", { courier, trackingNumber });
+
+  onConfirm(courier, trackingNumber);
+};
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

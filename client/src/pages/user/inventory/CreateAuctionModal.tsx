@@ -22,7 +22,6 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { auctionActions } from "@/store/slices/auctionSlice";
 import { toast } from "@/hooks/use-toast";
 import { CalendarIcon, Gavel, DollarSign } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { InventoryItem } from "./components/inventory.types";
 
 /**
