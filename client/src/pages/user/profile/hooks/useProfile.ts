@@ -84,10 +84,18 @@ export function useProfile() {
         response.data?.data?.user || response.data?.data || response.data;
       if (!updatedUser) throw new Error("Failed to update profile");
 
-      setProfile(normalizeUserProfile(updatedUser));
-      setStats(normalizeStats(updatedUser));
+      // Merge payload fields with backend response, so frontend reflects edited values
+      const mergedUser = {
+        ...(profile || {}),
+        ...updatedUser,
+        ...payload,
+        name,
+      };
+
+      setProfile(normalizeUserProfile(mergedUser));
+      setStats(normalizeStats(mergedUser));
       setState("success");
-      return updatedUser;
+      return mergedUser;
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to update profile");
       setState("error");
