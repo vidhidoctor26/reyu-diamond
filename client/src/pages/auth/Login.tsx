@@ -53,10 +53,11 @@ const Login = () => {
     watch,
     setValue,
     formState: { errors, isValid },
-  } = useForm<LoginForm>({
+  }  = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     defaultValues: {
+    
       email: "",
       password: "",
       rememberMe: false,
@@ -68,6 +69,8 @@ const Login = () => {
   /* ================= Submit Handler ================= */
 
   const onSubmit = (data: LoginForm) => {
+    console.log("LOGIN DATA:", data.email, data.password);
+  
     dispatch(
       authActions.loginRequest({
         email: data.email,

@@ -10,6 +10,7 @@ import notificationReducer from "./slices/notificationsSlice";
 import ratingsReducer from "./slices/ratingSlice";
 import badgeReducer from "./slices/badgeSlice";
 import advertisementReducer from "./slices/advertisementSlice";
+import adminReducer from "./slices/adminSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -22,7 +23,8 @@ const rootReducer = combineReducers({
   notifications: notificationReducer,
   rating: ratingsReducer,
   badge: badgeReducer,
-  advertisement: advertisementReducer, // ← was "adcertisement"
+  advertisement: advertisementReducer, 
+  admin: adminReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

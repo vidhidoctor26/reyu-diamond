@@ -24,12 +24,13 @@ interface CancelPayload {
 
 
 const calculateReputation = (stats: IUserStats): number => {
-  return (
+  const score =
     stats.completedDeals * 5 +
     stats.averageRating * 20 +
     stats.totalShipments * 2 -
-    stats.cancelDeals * 3
-  );
+    stats.cancelDeals * 3;
+
+  return Math.max(0, Math.round(score)); // ✅ prevents negative
 };
 
 export const handleSellerDealCompleted = async (
@@ -58,7 +59,10 @@ export const handleBuyerDealCompleted = async (
 
   user.stats.completedDeals += 1;
 
-  user.stats.reputationScore = calculateReputation(user.stats);
+  user.stats.reputationScore = Math.max(
+  0,
+  calculateReputation(user.stats)
+);
 
   await user.save();
   logger.info("Buyer stats updated after deal completed", { buyerId, reputationScore: user.stats.reputationScore });
@@ -75,7 +79,10 @@ export const handleDealCancelled = async (
 
   user.stats.cancelDeals += 1;
 
-  user.stats.reputationScore = calculateReputation(user.stats);
+  user.stats.reputationScore = Math.max(
+  0,
+  calculateReputation(user.stats)
+);
 
   await user.save();
   logger.info("User stats updated after deal cancelled", { cancelledBy, reputationScore: user.stats.reputationScore });
@@ -105,7 +112,10 @@ export const handleRatingSubmitted = async (
   user.stats.averageRating = Number(avgRating.toFixed(2));
   user.stats.totalRatings = totalRatings;
 
-  user.stats.reputationScore = calculateReputation(user.stats);
+  user.stats.reputationScore = Math.max(
+  0,
+  calculateReputation(user.stats)
+);
 
   await user.save();
   logger.info("User rating stats updated", { userId, avgRating, totalRatings, reputationScore: user.stats.reputationScore });

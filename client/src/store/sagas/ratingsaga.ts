@@ -8,6 +8,7 @@ import {
 
 function* submitRatingSaga(action: any): any {
   try {
+    console.log("Submitting rating with payload:", action.payload);
     const { userId, onSuccess, onError, ...payload } = action.payload;
     const response = yield call(createRatingAPI, userId, payload);
     yield put(ratingActions.submitRatingSuccess(response.data.data));

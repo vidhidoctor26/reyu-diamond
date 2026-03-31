@@ -4,6 +4,7 @@ import type { DealRating } from "../types/rating.types";
 import RatingStars from "./RatingStars";
 
 interface RatingBannerProps {
+  
   isRated: boolean;
   submittedRating: DealRating | null;
   onRateNow: () => void;
@@ -11,6 +12,7 @@ interface RatingBannerProps {
 
 const RatingBanner = ({ isRated, submittedRating, onRateNow }: RatingBannerProps) => {
   if (isRated && submittedRating) {
+    console.log("Submitted rating:", submittedRating);
     return (
       <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 p-4">
         <div className="flex items-center gap-3">

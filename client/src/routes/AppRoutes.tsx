@@ -20,6 +20,7 @@ import KycStatus from "@/pages/kyc/KycStatus";
 
 /* Layouts */
 import UserRoutes from "./UserRoutes";
+import AdminRoutes from "./AdminRoutes";
 // import AdminRoutes from "./AdminRoutes";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import PublicRoute from "@/routes/PublicRoute";
@@ -45,6 +46,12 @@ import MessagesPage from "@/pages/user/chat/MessagesPage";
 import NotificationsPage from "@/pages/user/notifications/NotificationsPage";
 import AdvertisementsList from "@/pages/user/advertisment/AdvertisementsList";
 import CreateAdvertisement from "@/pages/user/advertisment/CreateAdvertisement";
+import AdminDashboard from "@/pages/admin/dashboard/AdminDashboard";
+import AdminUsers from "@/pages/admin/users/AdminUsers";
+import AdminKycPage from "@/pages/admin/kyc/AdminKyc";
+import AdminAds from "@/pages/admin/ads/AdminAds";
+import AdminDeals from "@/pages/admin/deals/AdminDeals";
+import AdminAuctions from "@/pages/admin/auctions/AdminAuctions";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -166,6 +173,23 @@ const AppRoutes = () => {
         <Route path="advertisements" element={<AdvertisementsList />} />
         <Route path="advertisements/create" element={<CreateAdvertisement />} />
 
+      </Route>
+
+           {/* ---------- ADMIN ROUTES ---------- */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminRoutes />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="kyc" element={<AdminKycPage />} />
+        <Route path="ads" element={<AdminAds />} />
+        <Route path="deals" element={<AdminDeals />} />
+        <Route path="auctions" element={<AdminAuctions />} />
       </Route>
 
       {/* ---------- FALLBACK ---------- */}

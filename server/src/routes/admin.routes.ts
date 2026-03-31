@@ -25,7 +25,7 @@ router.patch("/ads/:adId/status", AdsController.updateAdStatusController);
 
 // Deal & Dispute Management
 router.get("/deals", AdminController.getAllDeals);
-router.patch("/deals/:id/resolve-dispute", DealController.resolveDispute);
+router.patch("/deals/:dealId/resolve-dispute", DealController.resolveDispute);
 
 // Auction Management
 router.get("/auctions", AdminController.getAllAuctions);

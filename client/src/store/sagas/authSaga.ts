@@ -80,7 +80,7 @@ function* loginWorker(
       authActions.loginSuccess({
         user: normalizedUser,
         token,
-        accountStatus: user.accountStatus,
+        accountStatus: user.isBlocked ? "SUSPENDED" : "ACTIVE",
         kycStatus:
           user.kycStatus === "not_submitted" ? "NOT_STARTED" : user.kycStatus,
       })
@@ -248,7 +248,7 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
           role: serverUser.role,
         },
         token, // ✅ pass token so Redux state has it
-        accountStatus: serverUser.accountStatus || "ACTIVE",
+        accountStatus: serverUser.isBlocked ? "SUSPENDED" : "ACTIVE",
         kycStatus,
       }),
     );

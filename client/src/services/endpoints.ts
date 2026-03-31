@@ -112,4 +112,17 @@ BADGES: {
     UPDATE_STATUS: (adId: string) => `/ads/${adId}/status`, // PATCH (admin)
   },
 
+   ADMIN: {
+    STATS:          "/admin/stats",
+    USERS:          "/admin/users",
+    USER_BLOCK:     (id: string) => `/admin/users/${id}/block`,
+    KYC_LIST:       "/admin/kyc",
+    KYC_VERIFY:     (id: string) => `/admin/kyc/${id}/verify-kyc`,
+    ADS_LIST:       "/admin/ads",
+    AD_STATUS:      (adId: string) => `/admin/ads/${adId}/status`,
+    DEALS_LIST:     "/admin/deals",
+    DEAL_RESOLVE:   (dealId: string) => `/admin/deals/${dealId}/resolve-dispute`,
+    AUCTIONS_LIST:  "/admin/auctions",
+  },
+
 };

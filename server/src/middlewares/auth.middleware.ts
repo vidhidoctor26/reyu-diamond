@@ -9,42 +9,49 @@ interface JwtPayload {
     role : string
 }
 
-export const protect = async(
-    req : any,
-    res : Response,
-    next : NextFunction
+export const protect = async (
+  req: any,
+  res: Response,
+  next: NextFunction
 ) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-    try {
-
-        const authHeader = req.headers.authorization;
-
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-
-            return sendResponse(res , 401 , false , "Unauthorized")
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET as string
-        ) as JwtPayload;
-
-        const user = await User.findById(decoded.userId);
-
-        if(!user) {
-
-            return sendResponse(res , 401 , false , "User not found");
-        }
-
-        req.user = user;
-        req.userRole = decoded.role;
-
-        next();
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return sendResponse(res, 401, false, "Unauthorized");
     }
-    catch(err) {
-        logger.warn("JWT verification failed", { error: err });
-        return sendResponse(res , 401 , false, "Invalid or Expired Token");
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as JwtPayload;
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return sendResponse(res, 401, false, "User not found");
     }
-}
+
+    if (user.isBlocked) {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Your account has been blocked by admin",
+        undefined,
+        undefined,
+        "ACCOUNT_BLOCKED"
+      );
+    }
+
+    req.user = user;
+    req.userRole = decoded.role;
+
+    next();
+  } catch (err) {
+    logger.warn("JWT verification failed", { error: err });
+    return sendResponse(res, 401, false, "Invalid or Expired Token");
+  }
+};

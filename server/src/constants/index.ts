@@ -167,6 +167,7 @@ export enum ErrorCode {
 
   // User
   FCM_TOKEN_REQUIRED = "FCM_TOKEN_REQUIRED",
+  ACCOUNT_BLOCKED = "ACCOUNT_BLOCKED",
 }
 
 /* ================= HTTP STATUS CODES ================= */
@@ -256,6 +257,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
 
   // User
   [ErrorCode.FCM_TOKEN_REQUIRED]: "FCM token is required",
+  [ErrorCode.ACCOUNT_BLOCKED]: "Your account has been blocked by admin",
 };
 
 /* ================= SUCCESS MESSAGES ================= */

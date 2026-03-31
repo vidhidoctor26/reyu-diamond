@@ -9,6 +9,7 @@ import { setUserOtp, CustomError, HTTP_STATUS, ErrorCode } from "../utils/index"
 import logger from "../utils/logger";
 
 interface LoginResult {
+  isBlocked: boolean;
   _id: string;
   name: string;
   email: string;
@@ -112,6 +113,14 @@ export const loginUser = async (
     throw new CustomError("Invalid email or password", HTTP_STATUS.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS);
   }
 
+   if (user.isBlocked) {
+    throw new CustomError(
+      "Your account has been blocked by admin",
+      HTTP_STATUS.FORBIDDEN,
+      ErrorCode.ACCOUNT_BLOCKED
+    );
+  }
+
   // if email not verified send otp again
   if (!user.isEmailVerified) {
     if (
@@ -143,6 +152,7 @@ export const loginUser = async (
     name: user.name,
     email: user.email,
     role: user.role,
+    isBlocked: user.isBlocked,
     isKycVerified: user.isKycVerified,
     isEmailVerified: user.isEmailVerified,
     kycStatus: isAdmin ? "approved" : kyc?.status || "not_submitted",

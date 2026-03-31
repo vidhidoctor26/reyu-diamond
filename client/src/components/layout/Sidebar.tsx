@@ -42,6 +42,9 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
   const chatUnread = useAppSelector((state) => state.chat.totalUnread);
   const isKycApproved = kycStatus === "APPROVED";
 
+  const accountStatus = useAppSelector((s) => s.auth.accountStatus);
+  const isBlocked = accountStatus === "SUSPENDED";
+
   useEffect(() => {
     if (isAuthenticated && user) {
       // Step A: Request permission and send token to backend
@@ -92,69 +95,83 @@ const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
 
   const homeLink = role === "admin" ? "/admin" : "/user";
 
-  const SidebarContent = () => (
-    <>
-      {/* Logo */}
-      <div className="p-6 border-b border-border">
-        <Link to={homeLink} className="flex items-center gap-3">
-          <Diamond className="h-8 w-8 text-accent" />
-          <span className="font-display text-xl font-semibold text-primary">
-            Reyu Diamond
-          </span>
-        </Link>
+const SidebarContent = () => (
+  <>
+    {/* Logo */}
+    <div className="p-6 border-b border-border">
+      <Link to={homeLink} className="flex items-center gap-3">
+        <Diamond className="h-8 w-8 text-accent" />
+        <span className="font-display text-xl font-semibold text-primary">
+          Reyu Diamond
+        </span>
+      </Link>
+    </div>
+
+    {/* ← ADD: Blocked Banner */}
+    {isBlocked && (
+      <div className="mx-4 mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-2">
+        <Shield className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+        <p className="text-xs text-destructive leading-snug">
+          Your account has been suspended. Contact support for help.
+        </p>
       </div>
+    )}
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto scrollbar-premium">
-        <ul className="space-y-1">
-          {navItems.map((item: any) => {
-            const isDisabled = item.requireKyc && !isKycApproved;
+    {/* Navigation */}
+    <nav className="flex-1 p-4 overflow-y-auto scrollbar-premium">
+      <ul className="space-y-1">
+        {navItems.map((item: any) => {
+          // ← CHANGE: isDisabled now includes isBlocked
+          const isDisabled = (item.requireKyc && !isKycApproved) || isBlocked;
+          const isBlockedItem = isBlocked; // to show different icon
 
-            let badgeCount = 0;
-            if (item.label === "Messages") badgeCount = chatUnread;
-            if (item.label === "Notifications") badgeCount = notificationUnread;
+          let badgeCount = 0;
+          if (item.label === "Messages") badgeCount = chatUnread;
+          if (item.label === "Notifications") badgeCount = notificationUnread;
 
-            return (
-              <li key={item.href}>
-                <NavLink
-                  to={isDisabled ? "#" : item.href}
-                  end
-                  onClick={(e) => {
-                    if (isDisabled) {
-                      e.preventDefault();
-                      navigate("/kyc/start");
-                    } else {
-                      handleNavClick();
-                    }
-                  }}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
-                      isDisabled
-                        ? "opacity-50 text-muted-foreground"
-                        : isActive
-                          ? "bg-primary text-primary-foreground shadow-soft"
-                          : "text-muted-foreground hover:text-primary hover:bg-muted",
-                    )
+          return (
+            <li key={item.href}>
+              <NavLink
+                to={isDisabled ? "#" : item.href}
+                end
+                onClick={(e) => {
+                  if (isDisabled) {
+                    e.preventDefault();
+                    // ← CHANGE: don't redirect to KYC if blocked
+                    if (!isBlocked) navigate("/kyc/start");
+                  } else {
+                    handleNavClick();
                   }
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
+                }}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    isDisabled
+                      ? "opacity-40 text-muted-foreground cursor-not-allowed"
+                      : isActive
+                        ? "bg-primary text-primary-foreground shadow-soft"
+                        : "text-muted-foreground hover:text-primary hover:bg-muted",
+                  )
+                }
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="font-medium">{item.label}</span>
 
-                  {badgeCount > 0 && !isDisabled && (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground shadow-sm">
-                      {badgeCount > 99 ? "99+" : badgeCount}
-                    </span>
-                  )}
-                  {isDisabled && (
-                    <Shield className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
-                  )}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                {badgeCount > 0 && !isDisabled && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground shadow-sm">
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
+                {/* ← CHANGE: show different icons for blocked vs KYC */}
+                {isDisabled && (
+                  <Shield className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
+                )}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
 
       {/* Bottom Section */}
       <div className="p-4 border-t border-border">
