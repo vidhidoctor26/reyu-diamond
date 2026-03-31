@@ -11,7 +11,7 @@ export const ENDPOINTS = {
 
   USER: {
     PROFILE: "/user/profile",
-    UPDATE_PROFILE: "/user/update",
+    UPDATE_PROFILE: "/user/profile",
   },
 
   KYC: {

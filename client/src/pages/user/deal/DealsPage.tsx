@@ -14,12 +14,15 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { dealActions } from "@/store/slices/dealSlice";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
+import ConnectStripeBanner from "@/components/stripe/ConnectStripeBanner";
+import { useStripeConnect } from "@/hooks/useStripeConnect";
 
 const DealsPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
     const { deals, loading } = useAppSelector((s) => s.deal);
+    const { loading: stripeLoading, connected } = useStripeConnect();
 
     useEffect(() => {
         dispatch(dealActions.fetchDealsRequest());
@@ -47,6 +50,8 @@ const DealsPage = () => {
             new Date(b.createdAt).getTime() -
             new Date(a.createdAt).getTime()
     );
+
+    
 
     const stats = [
         {
@@ -109,8 +114,15 @@ const DealsPage = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <h1 className="text-3xl font-semibold">Deals</h1>
+                   <h1 className="font-display text-3xl md:text-4xl font-semibold text-primary">Deals</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
+            Track all your diamond transactions in one place
+          </p>
                 </motion.div>
+
+                {!stripeLoading && !connected && (
+    <ConnectStripeBanner />
+)}
 
                 {/* STATS */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

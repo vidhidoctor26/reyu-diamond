@@ -11,6 +11,7 @@ import ratingSaga from "./sagas/ratingsaga";
 import badgeSaga from "./sagas/badgeSaga";
 import { advertisementSaga } from "./sagas/advertisementSaga";
 import { adminSaga } from "./sagas/adminSaga";
+import profileSaga from "./sagas/profileSaga";
 
 
 
@@ -29,6 +30,7 @@ export default function* rootSaga() {
     badgeSaga(),
     advertisementSaga(),
     adminSaga(),
+    profileSaga(),
 
   ]);
 }

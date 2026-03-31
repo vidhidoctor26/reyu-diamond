@@ -48,10 +48,13 @@ import AdvertisementsList from "@/pages/user/advertisment/AdvertisementsList";
 import CreateAdvertisement from "@/pages/user/advertisment/CreateAdvertisement";
 import AdminDashboard from "@/pages/admin/dashboard/AdminDashboard";
 import AdminUsers from "@/pages/admin/users/AdminUsers";
+import StripeSuccess from "@/pages/user/stripe/StripeSuccess";
+import StripeRefresh from "@/pages/user/stripe/StripeRefresh";
 import AdminKycPage from "@/pages/admin/kyc/AdminKyc";
 import AdminAds from "@/pages/admin/ads/AdminAds";
 import AdminDeals from "@/pages/admin/deals/AdminDeals";
 import AdminAuctions from "@/pages/admin/auctions/AdminAuctions";
+import Profile from "@/pages/user/profile/Profile";
 
 /* Other */
 import Unauthorized from "@/pages/Unauthorized";
@@ -172,6 +175,9 @@ const AppRoutes = () => {
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="advertisements" element={<AdvertisementsList />} />
         <Route path="advertisements/create" element={<CreateAdvertisement />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="stripe/success" element={<StripeSuccess />} />
+        <Route path="stripe/refresh" element={<StripeRefresh />} />
 
       </Route>
 
