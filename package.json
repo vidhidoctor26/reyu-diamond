@@ -4,8 +4,8 @@
   "scripts": {
     "client": "npm start --prefix client",
     "server": "npm run dev --prefix server",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "start": "npm run server"
+    "dev": "node init && concurrently \"npm run server\" \"npm run client\"",
+    "start": "node init && npm run server"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
