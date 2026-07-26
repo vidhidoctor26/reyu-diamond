@@ -18,6 +18,7 @@ export const createAuction = async (req: any, res: Response, next: NextFunction)
 
 export const getAuctions = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log("🚀 GET AUCTIONS QUERY:", req.query);
     const filters: any = {};
     if (req.query.status) filters.status = req.query.status;
     if (req.query.sellerId) filters.sellerId = req.query.sellerId;

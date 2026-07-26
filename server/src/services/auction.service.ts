@@ -89,11 +89,55 @@ export const createAuctionService = async ({
 
 // GET
 export const getAuctionsService = async (filters: any = {}) => {
-  return Auction.find(filters)
+  console.log("🧠 SERVICE START");
+  console.log("🧪 Incoming Filters:", filters);
+
+  const now = new Date();
+  console.log("🕒 Current Time:", now.toISOString());
+
+  // ✅ Step 1: Fetch ALL auctions first (for debugging)
+  const auctions = await Auction.find({})
     .populate("inventoryId")
     .populate("sellerId", "name email")
     .populate("highestBidderId", "name email")
     .sort({ endDate: 1 });
+
+  console.log("📦 TOTAL AUCTIONS FROM DB:", auctions.length);
+
+  // ✅ Step 2: Debug each auction
+  auctions.forEach((a: any) => {
+    console.log("🔍 RAW AUCTION:", {
+      id: a._id,
+      auctionStatus: a.status,
+      auctionLocked: a.locked,
+      inventoryLocked: a.inventoryId?.locked,
+      inventoryStatus: a.inventoryId?.status,
+      startDate: a.startDate,
+      endDate: a.endDate
+    });
+  });
+
+  // ✅ Step 3: Apply correct marketplace filter
+  const filtered = auctions.filter((a: any) => {
+    const condition =
+      a.status === "active" &&
+      a.locked === false;
+      // ❌ DO NOT check inventory.locked
+
+    console.log("🧪 FILTER CHECK:", {
+      id: a._id,
+      condition,
+      auctionStatus: a.status,
+      auctionLocked: a.locked,
+      inventoryLocked: a.inventoryId?.locked
+    });
+
+    return condition;
+  });
+
+  console.log("📦 FINAL MARKETPLACE COUNT:", filtered.length);
+
+  return filtered;
 };
 
 export const getAuctionByIdService = async (auctionId: string) => {

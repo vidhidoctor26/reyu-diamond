@@ -7,8 +7,7 @@ import logger from "../utils/logger";
 import * as NotificationEvents from "../notifications/events";
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
-   console.log("🔔 Webhook received:", req.headers["stripe-signature"] ? "has signature" : "NO SIGNATURE");
-  console.log("🔔 Body type:", typeof req.body, Buffer.isBuffer(req.body) ? "is buffer" : "not buffer");
+  logger.info("Stripe webhook received");
   const sig = req.headers["stripe-signature"];
 
   let event: Stripe.Event;
@@ -99,22 +98,6 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
         break;
       }
 
-      case "charge.succeeded": {
-        const charge = event.data.object as Stripe.Charge;
-
-        const paymentIntentId = charge.payment_intent as string;
-
-        const escrow = await Escrow.findOne({
-          stripePaymentIntentId: paymentIntentId,
-        });
-
-        if (!escrow) break;
-
-        escrow.stripeChargeId = charge.id;
-        await escrow.save();
-
-        break;
-      }
       case "charge.succeeded": {
         const charge = event.data.object as Stripe.Charge;
         const paymentIntentId = charge.payment_intent as string;

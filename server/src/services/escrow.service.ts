@@ -107,6 +107,15 @@ export const releaseEscrowService = async (
   const escrow = await Escrow.findOne({ dealId });
   if (!escrow) throw new CustomError("Escrow not found", HTTP_STATUS.NOT_FOUND, ErrorCode.NOT_FOUND);
 
+  // Handle already released escrow
+  if (escrow.status === "RELEASED") {
+    return {
+      deal,
+      escrow,
+      message: "Escrow already released",
+    };
+  }
+
   if (escrow.status !== "HELD") {
     throw new CustomError("Escrow must be HELD", HTTP_STATUS.BAD_REQUEST, ErrorCode.ESCROW_NOT_HELD);
   }
