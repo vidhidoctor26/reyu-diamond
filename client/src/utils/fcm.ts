@@ -5,6 +5,8 @@ import { ENDPOINTS } from "../services/endpoints";
 
 export const requestFcmToken = async () => {
   try {
+    if (!messaging) return;
+
     // 1. Check browser support
     if (!("Notification" in window)) {
       console.info("This browser does not support desktop notifications");
@@ -20,7 +22,7 @@ export const requestFcmToken = async () => {
 
     // 3. Get token from Firebase
     const token = await getToken(messaging, {
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY || "BGFnnjjDkvH1zVdKqEDpFceM2zG1Rhu9-YwuJHbdgP9FzkQC-O2H_JSzAw_4r58VyxSS-0fw_RaaoIbBzyXtH_Y",
     });
 
     if (!token) return;
@@ -51,6 +53,7 @@ export const clearFcmToken = () => {
 
 export const onMessageListener = () =>
   new Promise((resolve) => {
+    if (!messaging) return;
     onMessage(messaging, (payload) => {
       resolve(payload);
     });
