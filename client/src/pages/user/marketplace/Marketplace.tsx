@@ -27,70 +27,53 @@ const Marketplace = () => {
   }, [dispatch]);
 
   /* ── Transform raw auctions ── */
-  const allListings = useMemo(
-    () =>
-      auctions
-        .filter((a) => a.status === "active" || a.status === "upcoming")
-        .map(auctionToMarketplace),
-    [auctions]
-  );
+  const allListings = useMemo(() => {
+  const mapped = auctions
+    .filter((a) => a.status === "active" || a.status === "upcoming")
+    .map(auctionToMarketplace);
+
+  console.log("🔥 ALL LISTINGS:", mapped);
+
+  return mapped;
+}, [auctions]);
 
   /* ── Client-side filter + sort ── */
-  const listings = useMemo(() => {
-    let result = allListings.filter((l) => {
-      const q = searchQuery.toLowerCase();
-      if (
-        q &&
-        !l.name.toLowerCase().includes(q) &&
-        !l.color.toLowerCase().includes(q) &&
-        !l.clarity.toLowerCase().includes(q) &&
-        !String(l.carat).includes(q)
-      )
-        return false;
+const listings = useMemo(() => {
+  console.log("🧪 BEFORE FILTER:", allListings);
 
-      if (l.price < appliedFilters.priceRange[0] || l.price > appliedFilters.priceRange[1])
-        return false;
-      if (l.carat < appliedFilters.caratRange[0] || l.carat > appliedFilters.caratRange[1])
-        return false;
+  let result = allListings.filter((l) => {
+    console.log("🔍 CHECKING ITEM:", l);
 
-      if (
-        appliedFilters.selectedShapes.length > 0 &&
-        !appliedFilters.selectedShapes.some((s) =>
-          l.name.toLowerCase().includes(s.toLowerCase())
-        )
-      )
-        return false;
+    const q = searchQuery.toLowerCase();
 
-      if (
-        appliedFilters.selectedColors.length > 0 &&
-        !appliedFilters.selectedColors.includes(l.color)
-      )
-        return false;
-
-      if (
-        appliedFilters.selectedClarities.length > 0 &&
-        !appliedFilters.selectedClarities.includes(l.clarity)
-      )
-        return false;
-
-      if (
-        appliedFilters.selectedCuts.length > 0 &&
-        !appliedFilters.selectedCuts.includes(l.cut)
-      )
-        return false;
-
-      return true;
-    });
-
-    switch (sortBy) {
-      case "price-low":  return [...result].sort((a, b) => a.price - b.price);
-      case "price-high": return [...result].sort((a, b) => b.price - a.price);
-      case "carat-high": return [...result].sort((a, b) => b.carat - a.carat);
-      case "carat-low":  return [...result].sort((a, b) => a.carat - b.carat);
-      case "most-bids":  return [...result].sort((a, b) => b.bids - a.bids);
-      default:           return result;
+    if (
+      q &&
+      !l.name?.toLowerCase().includes(q) &&
+      !l.color?.toLowerCase().includes(q) &&
+      !l.clarity?.toLowerCase().includes(q) &&
+      !String(l.carat).includes(q)
+    ) {
+      console.log("❌ FILTERED BY SEARCH", l);
+      return false;
     }
-  }, [allListings, searchQuery, sortBy, appliedFilters]);
+
+    if (l.price < appliedFilters.priceRange[0] || l.price > appliedFilters.priceRange[1]) {
+      console.log("❌ FILTERED BY PRICE", l);
+      return false;
+    }
+
+    if (l.carat < appliedFilters.caratRange[0] || l.carat > appliedFilters.caratRange[1]) {
+      console.log("❌ FILTERED BY CARAT", l);
+      return false;
+    }
+
+    return true;
+  });
+
+  console.log("✅ FINAL LISTINGS:", result);
+
+  return result;
+}, [allListings, searchQuery, sortBy, appliedFilters]);
 
   return (
     <DashboardShell>
