@@ -143,3 +143,6 @@ package-lock.json
 client-module/
 logs/
 
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
