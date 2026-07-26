@@ -13,7 +13,6 @@ const KycStart = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { kycStatus } = useAppSelector((state) => state.auth);
   const { loading } = useAppSelector((state) => state.kyc);
 
   /* ===============================

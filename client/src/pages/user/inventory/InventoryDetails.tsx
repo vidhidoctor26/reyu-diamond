@@ -34,7 +34,7 @@ const InventoryDetails = () => {
 
   // Redux State
   const { selectedItem, loading } = useAppSelector((state) => state.inventory);
-  const [selectedItemForAuction, setSelectedItemForAuction] = useState(null);
+  const [selectedItemForAuction, setSelectedItemForAuction] = useState<any>(null);
   const isLocked = Boolean(selectedItem?.locked);
 
   /* ============================
@@ -66,7 +66,7 @@ const InventoryDetails = () => {
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this diamond?") && id) {
-      dispatch(deleteInventoryRequest(id));
+      dispatch(deleteInventoryRequest({ id }));
       toast({ title: "Processing", description: "Deleting diamond..." });
       navigate("/user/inventory");
     }
@@ -87,12 +87,14 @@ const InventoryDetails = () => {
   }
 
   // Fallback if item not found
-  const diamond = selectedItem || {
+  const diamond: any = selectedItem || {
     title: "Unknown Diamond",
     carat: 0,
     color: "N/A",
     clarity: "N/A",
     cut: "N/A",
+    shape: "Round",
+    status: "available",
     lab: "N/A",
     location: "Unknown",
     description: "No details available.",

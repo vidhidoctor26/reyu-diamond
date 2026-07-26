@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import api from "@/lib/api";
 
 /* ---------------- TYPES ---------------- */
 

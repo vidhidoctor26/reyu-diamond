@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { adminActions } from "@/store/slices/adminSlice";
 import { motion } from "framer-motion";
 import {
-  Handshake, Search, Loader2, AlertTriangle, CheckCircle2,
+  Search, Loader2, AlertTriangle, CheckCircle2,
   DollarSign, RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

@@ -1,4 +1,4 @@
-import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,7 +33,6 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ role, isOpen = false, onClose }: SidebarProps) => {
-  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -123,7 +122,6 @@ const SidebarContent = () => (
         {navItems.map((item: any) => {
           // ← CHANGE: isDisabled now includes isBlocked
           const isDisabled = (item.requireKyc && !isKycApproved) || isBlocked;
-          const isBlockedItem = isBlocked; // to show different icon
 
           let badgeCount = 0;
           if (item.label === "Messages") badgeCount = chatUnread;

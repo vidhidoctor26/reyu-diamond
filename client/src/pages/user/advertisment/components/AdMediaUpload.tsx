@@ -6,7 +6,7 @@ interface AdMediaUploadProps {
   mediaPreview: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: () => void;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
 }
 
 const AdMediaUpload = ({

@@ -63,7 +63,7 @@ export default function* notificationsSaga() {
   yield all([
     takeLatest(fetchNotificationsRequest.type, fetchNotificationsWorker),
     takeLatest(fetchUnreadCount.type, fetchUnreadCountWorker),
-    takeLatest(markAsRead.type, markAsReadWorker),
+    takeLatest(markAsRead.type as any, markAsReadWorker as any),
     takeLatest(markAllAsRead.type, markAllAsReadWorker),
   ]);
 }

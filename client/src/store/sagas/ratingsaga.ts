@@ -22,7 +22,7 @@ function* submitRatingSaga(action: any): any {
 
 function* fetchUserRatingsSaga(action: any): any {
   try {
-    const { userId, onSuccess, onError } = action.payload;
+    const { userId, onSuccess } = action.payload;
     const response = yield call(getRatingsByUserAPI, userId);
     yield put(ratingActions.fetchUserRatingsSuccess(response.data.data));
     if (onSuccess) onSuccess();

@@ -1,7 +1,6 @@
 import {
   MoreVertical,
   Check,
-  X,
   MessageSquare,
   ExternalLink,
   User,

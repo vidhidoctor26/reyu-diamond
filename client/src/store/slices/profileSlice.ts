@@ -34,7 +34,7 @@ const profileSlice = createSlice({
     },
 
     // UPDATE PROFILE
-    updateProfileRequest: (state, action: PayloadAction<any>) => {
+    updateProfileRequest: (state, _action: PayloadAction<any>) => {
       state.updating = true;
     },
     updateProfileSuccess: (state, action: PayloadAction<any>) => {

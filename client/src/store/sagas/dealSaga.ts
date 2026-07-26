@@ -88,7 +88,7 @@ function* raiseDisputeSaga(action: any): any {
 
 function* generatePdfSaga(action: any): any {
     try {
-        const { dealId, onSuccess, onError } = action.payload;
+        const { dealId, onSuccess } = action.payload;
         const response = yield call(generatePdfAPI, dealId);
         const pdfUrl = response.data.data.pdfUrl;
         yield put(dealActions.generatePdfSuccess({ pdfUrl, dealId }));
@@ -102,7 +102,7 @@ function* generatePdfSaga(action: any): any {
 
 function* createPaymentIntentSaga(action: any): any {
   try {
-    const { dealId, onSuccess, onError } = action.payload;
+    const { dealId, onSuccess } = action.payload;
     const response = yield call(createPaymentIntentAPI, dealId);
     const { clientSecret } = response.data.data;
     yield put(dealActions.createPaymentIntentSuccess({ clientSecret, dealId }));
@@ -116,7 +116,7 @@ function* createPaymentIntentSaga(action: any): any {
 
 function* releaseEscrowSaga(action: any): any {
   try {
-    const { dealId, onSuccess, onError } = action.payload;
+    const { dealId, onSuccess } = action.payload;
     const response = yield call(releaseEscrowAPI, dealId);
     yield put(dealActions.releaseEscrowSuccess(response.data.data));
     if (onSuccess) onSuccess();

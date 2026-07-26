@@ -73,7 +73,7 @@ export const inventorySchema = z
 
     carat: z
       .coerce.number({
-        invalid_type_error: "Carat must be a valid number",
+        message: "Carat must be a valid number",
       })
       .min(0.01, "Carat must be greater than 0")
       .max(50, "Carat seems unrealistic"),
@@ -107,13 +107,13 @@ export const inventorySchema = z
 
     price: z
       .coerce.number({
-        invalid_type_error: "Price must be a valid number",
+        message: "Price must be a valid number",
       })
       .min(0.01, "Price must be greater than 0"),
 
     startingPrice: z
       .coerce.number({
-        invalid_type_error: "Starting price must be a valid number",
+        message: "Starting price must be a valid number",
       })
       .min(0.01, "Starting price must be greater than 0")
       .optional(),

@@ -1,15 +1,11 @@
-export type InventoryStatus = "available" | "listed" | "in_deal";
+import type { InventoryItem as SliceInventoryItem } from "@/store/slices/inventorySlice";
 
-export interface InventoryItem {
-  id: string;
-  images:string[];
-  name: string;
-  carat: number;
-  color: string;
-  clarity: string;
-  cut: string;
-  price: number;
-  status: InventoryStatus;
-  lab: string;
-  addedDate: string;
-}
+export type InventoryStatus = "available" | "listed" | "on_memo" | "sold" | "in_deal";
+
+export type InventoryItem = SliceInventoryItem & {
+  id?: string;
+  name?: string;
+  addedDate?: string;
+  isLocked?: boolean;
+  certificateNumber?: string;
+};

@@ -24,7 +24,7 @@ import ProfileSkeleton from "./components/ProfileSkeleton";
 import ProfileError from "./components/ProfileError";
 
 const Profile = () => {
-  const { profile, stats, state, error, retry, updateProfile } = useProfile();
+  const { profile, stats, state, retry, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
@@ -42,14 +42,14 @@ const Profile = () => {
   useEffect(() => {
     if (profile) {
       setFormData({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email,
-        phone: profile.phone,
-        companyName: profile.companyName,
-        companyType: profile.companyType,
-        address: profile.address,
-        bio: profile.bio,
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        companyName: profile.companyName || "",
+        companyType: profile.companyType || "",
+        address: profile.address || "",
+        bio: profile.bio || "",
       });
     }
   }, [profile]);
@@ -57,14 +57,14 @@ const Profile = () => {
   const handleEdit = () => {
     if (profile) {
       setFormData({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email,
-        phone: profile.phone,
-        companyName: profile.companyName,
-        companyType: profile.companyType,
-        address: profile.address,
-        bio: profile.bio,
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        companyName: profile.companyName || "",
+        companyType: profile.companyType || "",
+        address: profile.address || "",
+        bio: profile.bio || "",
       });
     }
     setIsEditing(true);

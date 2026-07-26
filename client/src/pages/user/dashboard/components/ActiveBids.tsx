@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/redux";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import {
-  Gavel, ArrowUpRight, TrendingUp, TrendingDown,
+  Gavel, ArrowUpRight, TrendingUp,
   Clock, CheckCircle2, XCircle, Timer,
 } from "lucide-react";
 
@@ -42,7 +41,6 @@ const ActiveBids = () => {
   const currentList  = tab === "placed" ? placedBids : receivedBids;
 
   // Summary counts
-  const placedAccepted  = myBids.filter((b) => b.status === "ACCEPTED").length;
   const placedActive    = myBids.filter((b) => b.status === "ACTIVE").length;
   const receivedPending = auctionBids.filter((b) => b.status === "ACTIVE").length;
 

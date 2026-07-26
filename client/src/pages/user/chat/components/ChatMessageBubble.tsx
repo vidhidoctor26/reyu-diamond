@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Reply, FileText, Download } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import ChatStatusIcon from "./ChatStatusIcon";
@@ -10,15 +10,14 @@ interface Props {
   isMe: boolean;
   isGroupStart: boolean;
   participantInitial: string;
-  onReply: (msg: ChatMessage) => void;
+  onReply?: (msg: ChatMessage) => void;
 }
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const ChatMessageBubble = ({ msg, isMe, isGroupStart, participantInitial, onReply }: Props) => {
-  const senderId = typeof msg.senderId === "object" ? msg.senderId._id : msg.senderId;
+const ChatMessageBubble = ({ msg, isMe, isGroupStart, participantInitial }: Props) => {
 
   return (
     <motion.div

@@ -26,7 +26,8 @@ const statusConfig = {
 const StatusBadges = ({ profile }: StatusBadgesProps) => {
   const kyc = profile.isKycVerified ? statusConfig.kyc.verified : statusConfig.kyc.unverified;
   const email = profile.isEmailVerified ? statusConfig.email.verified : statusConfig.email.unverified;
-  const stripe = statusConfig.stripe[profile.stripeOnboardingStatus];
+  const stripeKey = (profile.stripeOnboardingStatus || "NOT_STARTED") as keyof typeof statusConfig.stripe;
+  const stripe = statusConfig.stripe[stripeKey] || statusConfig.stripe.NOT_STARTED;
 
   const badges = [
     { ...kyc, key: "kyc" },

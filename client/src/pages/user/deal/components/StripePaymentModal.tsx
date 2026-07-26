@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
     Elements,
@@ -24,7 +24,7 @@ interface PaymentFormProps {
     amount: number;
     dealId: string;
     onSuccess: () => void;
-    onError: (msg: string) => void;
+    onError?: (msg: string) => void;
 }
 
 const PaymentForm = ({ amount, onSuccess, onError }: PaymentFormProps) => {
@@ -51,7 +51,7 @@ const PaymentForm = ({ amount, onSuccess, onError }: PaymentFormProps) => {
         if (error) {
             const msg = error.message || "Payment failed. Please try again.";
             setMessage(msg);
-            onError(msg);
+            if (onError) onError(msg);
             setSubmitting(false);
         } else {
             // Payment succeeded (no redirect needed)
@@ -112,7 +112,7 @@ interface StripePaymentModalProps {
     amount: number;
     dealId: string;
     onSuccess: () => void;
-    onError: (msg: string) => void;
+    onError?: (msg: string) => void;
 }
 
 const StripePaymentModal = ({

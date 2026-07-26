@@ -3,8 +3,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { adminActions } from "@/store/slices/adminSlice";
 import { motion } from "framer-motion";
 import {
-  Megaphone, Search, Loader2, CheckCircle2, XCircle,
-  Ban, Eye, MousePointerClick, Image as ImageIcon,
+  Search, Loader2, CheckCircle2, XCircle,
+  Ban, MousePointerClick, Image as ImageIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

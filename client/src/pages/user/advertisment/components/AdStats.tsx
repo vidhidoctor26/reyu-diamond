@@ -13,7 +13,11 @@ const stats: Stat[] = [
   { label: "Expired",   value: "1", color: "text-muted-foreground" },
 ];
 
-const AdStats = () => (
+interface AdStatsProps {
+  ads?: any[];
+}
+
+const AdStats = (_props?: AdStatsProps) => (
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
     {stats.map((stat) => (
       <Card key={stat.label} className="border-border/50">

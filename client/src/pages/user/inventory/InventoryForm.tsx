@@ -75,7 +75,7 @@ const InventoryForm = () => {
     control,
     formState: { errors },
   } = useForm<InventoryFormValues>({
-    resolver: zodResolver(inventorySchema),
+    resolver: zodResolver(inventorySchema) as any,
     defaultValues: {
       title: "",
       description: "",

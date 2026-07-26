@@ -8,7 +8,7 @@ import {
   updateAuctionAPI,
 } from "@/services/auction.service";
 
-function* fetchAuctionsSaga(action: any): any {
+function* fetchAuctionsSaga(): any {
   try {
     const response = yield call(fetchAuctionsAPI); // no params
     const auctions = response.data.data;
@@ -65,7 +65,7 @@ function* createAuctionSaga(action: any): any {
 
 function* updateAuctionSaga(action: any): any {
   try {
-    const { auctionId, updates, onSuccess, onError } = action.payload;
+    const { auctionId, updates, onSuccess } = action.payload;
     const response = yield call(updateAuctionAPI, auctionId, updates);
     yield put(auctionActions.updateAuctionSuccess(response.data.data));
     if (onSuccess) onSuccess();
@@ -78,7 +78,7 @@ function* updateAuctionSaga(action: any): any {
 
 function* deleteAuctionSaga(action: any): any {
   try {
-    const { auctionId, onSuccess, onError } = action.payload;
+    const { auctionId, onSuccess } = action.payload;
     yield call(deleteAuctionAPI, auctionId);
     yield put(auctionActions.deleteAuctionSuccess(auctionId));
     if (onSuccess) onSuccess();

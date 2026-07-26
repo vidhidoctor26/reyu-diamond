@@ -65,7 +65,7 @@ const kycSlice = createSlice({
       state.loading = true;
     },
 
-    submitKycSuccess(state, action: PayloadAction<{ status: KycStatus }>) {
+    submitKycSuccess(state, _action: PayloadAction<{ status: KycStatus }>) {
       state.loading = false;
       // state.status = action.payload.status;
       state.currentStep = "STATUS";

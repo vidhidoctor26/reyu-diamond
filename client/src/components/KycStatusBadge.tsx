@@ -7,9 +7,6 @@ export const KycStatusBadge = () => {
   (state: any) => state.auth.kycStatus
 );
 
-
-  const user = useAppSelector((state: any) => state.auth.user);
-
   if (!kycStatus || kycStatus === "NOT_STARTED") return null;
 
   if (kycStatus === "APPROVED") {

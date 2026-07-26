@@ -4,7 +4,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Diamond, Package, Gavel, Handshake,
-  TrendingUp, DollarSign, Award, ArrowUpRight,
+  DollarSign, Award, ArrowUpRight,
 } from "lucide-react";
 
 const fmt = (n: number) => n?.toLocaleString() ?? "0";

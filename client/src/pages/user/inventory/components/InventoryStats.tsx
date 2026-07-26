@@ -3,15 +3,21 @@ import { motion } from "framer-motion";
 import { Package, Diamond, Eye, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppSelector } from "@/hooks/redux";
+import type { InventoryItem } from "@/store/slices/inventorySlice";
 
-const InventoryStats = () => {
-  const items = useAppSelector((s) => s.inventory.items);
+interface InventoryStatsProps {
+  items?: InventoryItem[];
+}
+
+const InventoryStats = ({ items: propItems }: InventoryStatsProps = {}) => {
+  const storeItems = useAppSelector((s: any) => s.inventory.items);
+  const items = propItems ?? storeItems;
 
   const stats = useMemo(() => {
     const total = items.length;
-    const available = items.filter((i) => i.status === "available").length;
-    const listed = items.filter((i) => i.status === "listed").length;
-    const onMemo = items.filter((i) => i.status === "on_memo").length;
+    const available = items.filter((i: any) => i.status === "available").length;
+    const listed = items.filter((i: any) => i.status === "listed").length;
+    const onMemo = items.filter((i: any) => i.status === "on_memo").length;
 
     return [
       { label: "Total Items", value: total, icon: Package },

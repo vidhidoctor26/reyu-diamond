@@ -4,9 +4,8 @@ import type { DealRating } from "../types/rating.types";
 import RatingStars from "./RatingStars";
 
 interface RatingBannerProps {
-  
   isRated: boolean;
-  submittedRating: DealRating | null;
+  submittedRating?: DealRating | null;
   onRateNow: () => void;
 }
 

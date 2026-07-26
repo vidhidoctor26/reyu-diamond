@@ -8,7 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Notification, NotificationType } from "../useNotifications";
+import type { Notification } from "../useNotifications";
 
 /**
  * 🔥 TYPE CONFIG (UPDATED WITH AUCTION)

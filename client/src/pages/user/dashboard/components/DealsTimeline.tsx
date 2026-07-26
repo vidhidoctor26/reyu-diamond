@@ -86,7 +86,7 @@ const DealsTimeline = () => {
             </div>
           ) : (
             <div className="space-y-1">
-              {recent.map((deal, idx) => {
+              {recent.map((deal) => {
                 const cfg =
                   statusConfig[deal.status] ?? statusConfig.CREATED;
                 const { Icon } = cfg;

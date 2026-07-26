@@ -6,7 +6,6 @@ import { authActions } from "../slices/authSlice";
 
 import {
   submitKyc as submitKycApi,
-  getKycStatus as getKycStatusApi,
 } from "@/services/kyc.service";
 
 /* =========================

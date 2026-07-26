@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -30,7 +30,6 @@ interface AdminShellProps {
 const AdminShell = ({ children }: AdminShellProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch  = useAppDispatch();
-  const navigate  = useNavigate();
   const { user }  = useAppSelector((state) => state.auth);
 
   const handleLogout = () => {

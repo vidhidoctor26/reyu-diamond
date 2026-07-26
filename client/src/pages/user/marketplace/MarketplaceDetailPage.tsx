@@ -452,7 +452,7 @@ const PlaceBidModal = ({
               <Label>Your Bid Amount</Label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon"
-                  onClick={() => setBidAmount((p) => Math.max(minBid, p - STEP))}
+                  onClick={() => setBidAmount((p: number) => Math.max(minBid, p - STEP))}
                   disabled={bidAmount <= minBid}>
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -467,7 +467,7 @@ const PlaceBidModal = ({
                   />
                 </div>
                 <Button variant="outline" size="icon"
-                  onClick={() => setBidAmount((p) => p + STEP)}>
+                  onClick={() => setBidAmount((p: number) => p + STEP)}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -475,7 +475,7 @@ const PlaceBidModal = ({
               <div className="flex gap-2 pt-1">
                 {[1000, 5000, 10000].map((inc) => (
                   <button key={inc}
-                    onClick={() => setBidAmount((p) => p + inc)}
+                    onClick={() => setBidAmount((p: number) => p + inc)}
                     className="flex-1 text-xs py-1.5 rounded-lg border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all">
                     +${inc.toLocaleString()}
                   </button>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,11 +17,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useAppDispatch();
 
-  const { isAuthenticated, token, error, loading, flow } = useAppSelector(
+  const { error, loading } = useAppSelector(
     (state) => state.auth,
   );
 

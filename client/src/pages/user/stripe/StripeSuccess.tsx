@@ -7,7 +7,7 @@ import { CheckCircle, Loader2 } from "lucide-react";
 
 const StripeSuccess = () => {
   const navigate = useNavigate();
-  const { status: accountStatus, loading, refetch } = useStripeConnect();
+  const { status, loading, refetch } = useStripeConnect();
 
   useEffect(() => {
     // Refetch the Stripe account status when the component mounts

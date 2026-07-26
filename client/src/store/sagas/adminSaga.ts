@@ -129,7 +129,7 @@ function* fetchDealsSaga() {
 function* resolveDisputeSaga(action: PayloadAction<{ id: string; resolution: "REFUND_BUYER" | "RELEASE_SELLER"; adminNote: string }>) {
   try {
     console.log("→ Resolving dispute:", action.payload); // add this
-    const res = yield call(
+    const res: AxiosResponse<{ data: any }> = yield call(
       resolveDisputeAPI,
       action.payload.id,
       { resolution: action.payload.resolution, adminNote: action.payload.adminNote }

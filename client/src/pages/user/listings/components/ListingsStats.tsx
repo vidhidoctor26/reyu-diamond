@@ -9,7 +9,12 @@ const stats = [
   { label: "Sold Items", value: "8", icon: TrendingUp, color: "bg-violet-500/10 text-violet-600" },
 ];
 
-const ListingsStats = () => (
+interface ListingsStatsProps {
+  listings?: any[];
+  loading?: boolean;
+}
+
+const ListingsStats = (_props?: ListingsStatsProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

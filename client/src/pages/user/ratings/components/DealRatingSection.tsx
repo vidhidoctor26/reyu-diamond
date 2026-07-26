@@ -22,7 +22,7 @@ const DealRatingSection = ({ dealId, dealStatus, targetUserId }: DealRatingSecti
     <>
       <RatingBanner
         isRated={isRated}
-        submittedRating={submitRating}
+        submittedRating={null}
         onRateNow={openRatingModal}
       />
 

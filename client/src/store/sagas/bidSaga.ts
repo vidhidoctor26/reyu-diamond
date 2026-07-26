@@ -81,9 +81,8 @@ function* fetchBidsReceivedSaga(): any {
 }
 
 function* updateBidSaga(action: any): any {
+  const { bidId, action: bidAction, onSuccess, onError } = action.payload || {};
   try {
-    const { bidId, action: bidAction, onSuccess, onError } = action.payload;
-
     console.log("🚀 UPDATING BID:", { bidId, bidAction });
 
     const response = yield call(updateBidStatusAPI, bidId, bidAction);

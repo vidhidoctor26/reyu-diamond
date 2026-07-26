@@ -249,7 +249,7 @@ function* hydrateSessionWorker(): Generator<any, any, any> {
         },
         token, // ✅ pass token so Redux state has it
         accountStatus: serverUser.isBlocked ? "SUSPENDED" : "ACTIVE",
-        kycStatus,
+        kycStatus: kycStatus as any,
       }),
     );
   } catch (err) {

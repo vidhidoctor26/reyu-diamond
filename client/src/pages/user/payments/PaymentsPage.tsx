@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CreditCard, ArrowDownLeft, ArrowUpRight,
-  Clock, XCircle, Loader2,
-  TrendingUp, Wallet, ShieldCheck, Search,
+  CreditCard, Loader2,
+  TrendingUp, Wallet, ShieldCheck,
   Diamond
 } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
@@ -15,13 +14,6 @@ import { dealStatusConfig } from "../deal/components/DealStatusBadge";
 
 /* ─── Types & Constants ───────────────────────────────────── */
 type TxType = "incoming" | "outgoing" | "pending" | "failed";
-
-const txTypeStyles: Record<TxType, { icon: any; color: string; bg: string; label: string }> = {
-  incoming: { icon: ArrowDownLeft, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Received" },
-  outgoing: { icon: ArrowUpRight, color: "text-blue-500",    bg: "bg-blue-500/10",    label: "Paid" },
-  pending:  { icon: Clock,         color: "text-amber-500",   bg: "bg-amber-500/10",   label: "In Escrow" },
-  failed:   { icon: XCircle,       color: "text-rose-500",    bg: "bg-rose-500/10",    label: "Failed" },
-};
 
 const fmt = (amount: number) =>
   new Intl.NumberFormat("en-US", { 
@@ -140,7 +132,6 @@ const PaymentsPage = () => {
             <div className="space-y-4">
               <AnimatePresence mode="popLayout">
                 {filtered.map((tx) => {
-                  const Style = txTypeStyles[tx.type];
                   return (
                     <motion.div
                       key={tx.id}
